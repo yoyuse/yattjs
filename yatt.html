@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>yatt.js</title>
+
+    <style>
+     body { font-size: 0.8rem; }
+     #container {
+       margin-left: auto;
+       margin-right: auto;
+       max-width: 800px;
+     }
+     /*  */
+     header {
+       border-bottom: 2px solid #424242;
+       font-size: 1.0rem;
+       margin: 1.33rem 0;
+       position: relative;
+     }
+     h1 {
+       display: inline-block;
+       font-family: "Meiryo", "Optima", sans-serif;
+       font-size: 2.0rem;
+       margin: 0;
+     }
+     /*  */
+     #breadcrumb {
+       display: inline-block;
+       position: absolute;
+       right: 0; bottom: 4px;
+     }
+     #breadcrumb .path-separator { display: none; }
+     #breadcrumb .path-component:not(:last-child)::after {
+       content: "";
+       display: inline-block;
+       border: 2px solid #9E9E9E;
+       border-bottom: transparent;
+       border-left: transparent;
+       margin: 8px;
+       transform: translate(-2px, 6px) rotate(45deg);
+       width: 5px; height: 5px;
+     }
+     /*  */
+     select {
+       margin: 4px 0;
+       max-width: 14.0rem;
+       text-overflow: ellipsis;
+     }
+     .stdio {
+       border: 1px solid #757575;
+       border-radius: 2px;
+       box-sizing: border-box;
+       display: inline-block;
+       font-family: monospace;
+       font-size: 14px;
+       line-height: 120%;
+       margin: 4px 0;
+       padding: 4px 2px;
+       white-space: pre;
+       width: 100%;
+       /* overflow-wrap: break-word; */
+       /* 禁則処理しない */
+       /* line-break: anywhere; */
+       /* word-break: break-all; */
+     }
+     #stdin {
+       caret-color: FieldText;
+       color: Field;
+     }
+     #stdin::placeholder { color: #757575; }
+     #stdhelp {
+       white-space: break-spaces;
+     }
+     /*  */
+     span.help {
+       padding: 0 4px;
+       white-space: pre;
+     }
+     span.ch {
+       font-family: monospace;
+       font-size: 13px;
+       position: relative;
+       bottom: 0.4em;
+     }
+     span.stroke {
+       font-family: monospace;
+       font-size: 16px;
+       padding: 0 2px;
+     }
+     span.dothelp {
+       display: inline-block;
+       margin-bottom: 4px;
+     }
+     span.dothelp span.ch {
+       bottom: 24px;
+       display: inline-block;
+       font-size: 16px;
+     }
+     span.dothelp span.stroke {
+       display: inline-block;
+       margin: 0 2px;
+     }
+     span.stroke { background-color: #F5F5F5; }
+     span.stroke.outset { background-color: #FFCDD2; }
+     /* */
+     span.accesskey { text-decoration: underline; }
+     /* */
+     span.usr { color: #26A69A; }
+     span.err { color: #F06292; }
+     span.weak { border-bottom: 2px solid #F8BBD0; }
+     .message {
+       border-left: 4px solid #9E9E9E;
+       color: #9E9E9E;
+       margin-left: 2px;
+       padding-left: 8px;
+     }
+     a:link, a:visited { color: #1E88E5; }
+    </style>
+
+    <link href="dark-mode.css" rel="stylesheet">
+
+    <!--  -->
+    <script src="lcs.js"></script>
+    <script src="cookie.js"></script>
+    <script src="utils.js"></script>
+    <!--  -->
+    <script src="yatt/im.js"></script>
+    <script src="yatt/t.js"></script>
+    <script src="yatt/tut.js"></script>
+    <script src="yatt/try.js"></script>
+    <script src="yatt/tt.js"></script>
+    <!--  -->
+    <script src="yatt/certain.js"></script>
+    <script src="yatt/certain-empty.js"></script>
+    <script src="yatt/certain-kana-noma.js"></script>
+    <script src="yatt/certain-t.js"></script>
+    <script src="yatt/certain-tut-2st.js"></script>
+    <script src="yatt/certain-kyouiku.js"></script>
+    <!--  -->
+    <script src="yatt/uncertain.js"></script>
+    <script src="yatt/uncertain-t.js"></script>
+    <script src="yatt/uncertain-tut-2st.js"></script>
+    <script src="yatt/uncertain-tut-3st.js"></script>
+    <script src="yatt/uncertain-kyouiku.js"></script>
+    <script src="yatt/uncertain-jouyou.js"></script>
+    <!--  -->
+    <script src="yatt/words.js"></script>
+    <script src="yatt/words-pubdic+.js"></script>
+    <!--  -->
+    <script src="yatt/dothelp.js"></script>
+    <!--  -->
+    <script src="yatt.js"></script>
+
+  </head>
+  <body>
+    <div id="container">
+      <header>
+        <h1>yatt.js</h1>
+        <!--  -->
+        <div id="breadcrumb"></div>
+        <script src="breadcrumb.js"></script>
+      </header>
+
+      <label for="selectim">入力方式</label>
+      <select id="selectim" name="selectim" accesskey="i"></select>
+      &emsp;
+      <input name="checkdothelp" type="checkbox" id="checkdothelp" accesskey="y">
+      <label for="checkdothelp">
+        打鍵図(<span class="accesskey">Y</span>)
+      </label>
+      &emsp;
+      <input name="checkecho" type="checkbox" id="checkecho" accesskey="e">
+      <label for="checkecho">
+        エコー(<span class="accesskey">E</span>)
+      </label>
+      &emsp;
+      <button name="buttonhint" id="buttonhint" accesskey="h">
+        <span class="accesskey">H</span>int
+      </button>
+      &emsp;
+      <input name="checkrepeat" type="checkbox" id="checkrepeat" accesskey="t">
+      <label for="checkrepeat">
+        Repea<span class="accesskey">T</span> for typo
+      </label>
+      <br>
+      <!-- <label for="selectcertain">CERTAIN</label> -->
+      <label for="selectcertain">修得済み</label>
+      <select id="selectcertain" name="selectcertain" accesskey="v"></select>
+      <br>
+      <!-- <label for="selectuncertain">UNCERTAIN</label> -->
+      <label for="selectuncertain">練習文字</label>
+      <select id="selectuncertain" name="selectuncertain" accesskey="u"></select>
+      <br>
+      <label for="selectlesson">レッスン</label>
+      <select id="selectlesson" name="selectlesson" accesskey="s"></select>
+      <br>
+      <div id="stdout" class="stdio">&nbsp;</div>
+      <br>
+      <input name="stdin" type="text" value="" id="stdin" class="stdio" lang="en" spellcheck="false" autocomplete="off" placeholder="ここに入力" accesskey="j">
+      <br>
+      <div id="stdhelp" class="stdio">&nbsp;</div>
+    </div>
+  </body>
+</html>
