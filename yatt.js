@@ -25,6 +25,17 @@ let help_style = "dothelp";
 let helps = new Array();
 // let echo_mode = false;
 let repeat_mode = false;
+let ifkananoma = false;
+const kananomachars = `
+々ー
+ぁあぃいぅうぇえぉお かがきぎくぐけげこご さざしじすずせぜそぞ
+ただちぢっつづてでとど なにぬねの はばぱひびぴふぶぷへべぺほぼぽ
+まみむめも ゃやゅゆょよ らりるれろ ゎわゐゑを ん
+ァアィイゥウェエォオ カガキギクグケゲコゴ サザシジスズセゼソゾ
+タダチヂッツヅテデトド ナニヌネノ ハバパヒビピフブプヘベペホボポ
+マミムメモ ャヤュユョヨ ラリルレロ ヮワヰヱヲ ン ヴヵヶ
+`.trim().split(/\s*/);
+let certain_chars = null;
 
 let prompting = false;
 
@@ -56,9 +67,15 @@ Array.prototype.SHUFFLE = function() {
     return a;
 }
 
+Array.prototype.SAMPLE = function() {
+    if (this.length === 0) { return undefined; }
+    return this[Math.floor(Math.random() * this.length)];
+}
+
 function make_pattern() {
     // const str = certain.concat(uncertain).join('');
-    const str = certain.chars.concat(uncertain.chars).join('');
+    // const str = certain.chars.concat(uncertain.chars).join('');
+    const str = certain_chars.concat(uncertain.chars).join('');
     pattern = new RegExp(`^[${RegExp.escape(str)}]+$`);
 }
 
@@ -83,8 +100,9 @@ function score(word, ch, used) {
     score += word.split('')
         .filter((element, index, self) => self.findIndex((e) => e === element) === index) // uniq
         .filter((c0) => {
-        return c0 !== ch && !used[c0] && !certain.chars.includes(c0);
-    }).length;
+            // return c0 !== ch && !used[c0] && !certain.chars.includes(c0);
+            return c0 !== ch && !used[c0] && !certain_chars.includes(c0);
+        }).length;
     return score;
 }
 
@@ -104,8 +122,10 @@ function reduce(word_array) {
         const count = stat(word_array);
         let chs = "";
         for (const ch in count) { if (2 <= count[ch]) {chs += ch; } }
-        const re = new RegExp(`^[${RegExp.escape(certain.chars.join("") + chs)}]+$`);
-        const word = word_array.filter((w) => re.test(w)).SHUFFLE()[0];
+        // const re = new RegExp(`^[${RegExp.escape(certain.chars.join("") + chs)}]+$`);
+        // const word = word_array.filter((w) => re.test(w)).SHUFFLE()[0];
+        const re = new RegExp(`^[${RegExp.escape(certain_chars.join("") + chs)}]+$`);
+        const word = word_array.filter((w) => re.test(w)).SAMPLE();
         // console.log([re, word]);
         if (word === undefined) { return word_array; }
         word_array = word_array.filter((w) => w != word);
@@ -405,6 +425,7 @@ window.addEventListener("load", (event) => {
     const selectcertain = document.getElementById("selectcertain");
     const selectuncertain = document.getElementById("selectuncertain");
     const selectlesson = document.getElementById("selectlesson");
+    const checkkananoma = document.getElementById("checkkananoma");
     stdout = document.getElementById("stdout");
     stdin = document.getElementById("stdin");
     stdhelp = document.getElementById("stdhelp");
@@ -423,6 +444,9 @@ window.addEventListener("load", (event) => {
     checkdothelp.checked = help_style === "dothelp";
     checkecho.checked = echo_mode;
     checkrepeat.checked = repeat_mode;
+    ifkananoma = cookie.get("kananoma") === "true";
+    checkkananoma.checked = ifkananoma;
+    checkkananoma.dispatchEvent(new Event("change"));
     //
     selectim.addEventListener("change", (event) => {
         const index = selectim.selectedIndex;
@@ -477,6 +501,7 @@ window.addEventListener("load", (event) => {
         cookie.set("certain", certain.id);
         cookie.write();
         //
+        certain_chars = ifkananoma ? certain.chars.concat(kananomachars) : certain.chars;
         if (certain && uncertain) { make_lessons(); }
     });
     //
@@ -715,6 +740,15 @@ window.addEventListener("load", (event) => {
         stdin.style.color = color;
         stdin.focus();
         cookie.set("echo", checkecho.checked);
+        cookie.write();
+    });
+    //
+    checkkananoma.addEventListener("change", (event) => {
+        ifkananoma = checkkananoma.checked;
+        certain_chars = ifkananoma ? certain.chars.concat(kananomachars) : certain.chars;
+        // make_lessons();
+        if (certain && uncertain) { make_lessons(); }
+        cookie.set("kananoma", ifkananoma);
         cookie.write();
     });
     //
