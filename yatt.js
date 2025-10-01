@@ -435,6 +435,10 @@ window.addEventListener("load", (event) => {
         //     selectlesson.selectedIndex = index;
         //     selectlesson.dispatchEvent(new Event("change"));
         // }
+        // ヒント (ヘルプ) を描画し直す
+        helps = helps.map((h) => im.encode2(h[0])[0]);
+        do_help();
+        stdin.focus();
     });
     //
     // selectbook.addEventListener("change", (event) => {
@@ -498,7 +502,7 @@ window.addEventListener("load", (event) => {
         */
         //
         // show_help(lesson.chars);
-        helps = lesson.chars.split("").map((ch) => im.encode2(ch));
+        helps = lesson.chars.split("").map((ch) => im.encode2(ch)[0]);
         do_help();
         clear();
         const ls = book.lessons[selectlesson.selectedIndex];
@@ -716,7 +720,7 @@ window.addEventListener("load", (event) => {
     //
     buttonhint.addEventListener("click", (event) => {
         // case "h":
-        helps.length = 0;
+        // helps.length = 0;
         if (text !== null) {
             helps = text.split("").map((ch) => im.encode2(ch)[0]); // XXX
         } else {
