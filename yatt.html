@@ -163,44 +163,48 @@
         <script src="breadcrumb.js"></script>
       </header>
 
-      <label for="selectim">入力方式</label>
+      <label for="selectim" title="入力方式を指定します">入力方式(<span class="accesskey">I</span>)</label>
       <select id="selectim" name="selectim" accesskey="i"></select>
-      &emsp;
+      &ensp;
       <input name="checkdothelp" type="checkbox" id="checkdothelp" accesskey="y">
-      <label for="checkdothelp">
+      <label for="checkdothelp" title="コードを(英字表示ではなく)図示します">
         打鍵図(<span class="accesskey">Y</span>)
       </label>
-      &emsp;
+      &ensp;
       <input name="checkecho" type="checkbox" id="checkecho" accesskey="e">
-      <label for="checkecho">
+      <label for="checkecho" title="入力キーを表示します">
         エコー(<span class="accesskey">E</span>)
       </label>
-      &emsp;
-      <button name="buttonhint" id="buttonhint" accesskey="h">
-        <span class="accesskey">H</span>int
-      </button>
-      &emsp;
-      <input name="checkrepeat" type="checkbox" id="checkrepeat" accesskey="t">
-      <label for="checkrepeat">
-        Repea<span class="accesskey">T</span> for typo
+      <br>
+      <label for="selectcertain" title="CERTAIN: 完全に覚えた(練習の必要がない)文字を指定します">修得済み(<span class="accesskey">V</span>)</label>
+      <select id="selectcertain" name="selectcertain" accesskey="v"></select>
+      &ensp;
+      <input name="checkkananoma" type="checkbox" id="checkkananoma" accesskey="g">
+      <label for="checkkananoma" title="CERTAIN(修得済み) にひらがな・かたかな・『ー』『々』の 171 字を含めます">
+        かなを含む(<span class="accesskey">G</span>)
       </label>
       <br>
-      <!-- <label for="selectcertain">CERTAIN</label> -->
-      <label for="selectcertain">修得済み</label>
-      <select id="selectcertain" name="selectcertain" accesskey="v"></select>
-      <br>
-      <!-- <label for="selectuncertain">UNCERTAIN</label> -->
-      <label for="selectuncertain">練習文字</label>
+      <label for="selectuncertain" title="UNCERTAIN: 練習する文字を指定します">練習文字(<span class="accesskey">U</span>)</label>
       <select id="selectuncertain" name="selectuncertain" accesskey="u"></select>
       <br>
-      <label for="selectlesson">レッスン</label>
+      <label for="selectlesson" title="レッスン番号を指定します">レッスン(<span class="accesskey">S</span>)</label>
       <select id="selectlesson" name="selectlesson" accesskey="s"></select>
+      &ensp;
+      <input name="checkrepeat" type="checkbox" id="checkrepeat" accesskey="t">
+      <label for="checkrepeat" title="「ミスしたら次の行に進めない」モードです">
+        鬼軍曹(<span class="accesskey">T</span>)
+      </label>
       <br>
-      <div id="stdout" class="stdio">&nbsp;</div>
+      <div id="stdout" class="stdio" title="出力欄: 問題文や採点結果が表示されます">&nbsp;</div>
       <br>
-      <input name="stdin" type="text" value="" id="stdin" class="stdio" lang="en" spellcheck="false" autocomplete="off" placeholder="ここに入力" accesskey="j">
+      <input name="stdin" type="text" value="" id="stdin" class="stdio" lang="en" spellcheck="false" autocomplete="off" placeholder="ここに入力" title="入力欄: ここに入力します" accesskey="j">
       <br>
-      <div id="stdhelp" class="stdio">&nbsp;</div>
+      <div id="stdhelp" class="stdio" title="ヘルプ欄: コードを表示します">&nbsp;</div>
+      <div>
+        <button name="buttonhint" id="buttonhint" accesskey="h" title="コードを表示します">
+          <span class="accesskey">H</span>int
+        </button>
+      </div>
     </div>
   </body>
 </html>
