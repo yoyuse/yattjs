@@ -446,7 +446,7 @@ window.addEventListener("load", (event) => {
     checkrepeat.checked = repeat_mode;
     ifkananoma = cookie.get("kananoma") === "true";
     checkkananoma.checked = ifkananoma;
-    checkkananoma.dispatchEvent(new Event("change"));
+    // checkkananoma.dispatchEvent(new Event("change"));
     //
     selectim.addEventListener("change", (event) => {
         const index = selectim.selectedIndex;
@@ -773,6 +773,9 @@ window.addEventListener("load", (event) => {
         cookie.set("repeat", repeat_mode);
         cookie.write();
     });
+    //
+    checkecho.dispatchEvent(new Event("change"));
+    // checkkananoma.dispatchEvent(new Event("change"));
     //
     do_reset();
 });
