@@ -8,11 +8,10 @@ let im = null;
 let book = null;
 let certain = null;
 let uncertain = null;
-// let words;
 let pattern = /^$/;
 let words_for_ch = new Object();
 let words_count_for_ch = new Object();
-//
+
 let lesson = null;
 let lesson_index = null;
 let text = null;
@@ -23,7 +22,6 @@ const cookie = new Cookie(cookie_name);
 
 let help_style = "dothelp";
 let helps = new Array();
-// let echo_mode = false;
 let repeat_mode = false;
 let ifkananoma = false;
 const kananomachars = `
@@ -55,26 +53,7 @@ let lschweak = new Array();     // lesson chars weak
 const lschtypo = new Array();   // lesson chars typo
 
 // YATT
-Array.prototype.SHUFFLE = function() {
-    if (this.length === 0) { return new Array; }
-    const a = [...this];        // copy array
-    for (let i = 0; i < a.length ; i++) {
-        const t = a[i];
-        const j = Math.floor(Math.random() * a.length);
-        a[i] = a[j];
-        a[j] = t;
-    }
-    return a;
-}
-
-Array.prototype.SAMPLE = function() {
-    if (this.length === 0) { return undefined; }
-    return this[Math.floor(Math.random() * this.length)];
-}
-
 function make_pattern() {
-    // const str = certain.concat(uncertain).join('');
-    // const str = certain.chars.concat(uncertain.chars).join('');
     const str = certain_chars.concat(uncertain.chars).join('');
     pattern = new RegExp(`^[${RegExp.escape(str)}]+$`);
 }
@@ -96,11 +75,7 @@ function read_words() {
 function score(word, ch, used) {
     let score = 0;
     score -= Math.abs(2 - word.length); // 2 字熟語を優先
-    // score += word.split('') /* .UNIQ() */ .filter((c0) => {
-    score += word.split('')
-        .filter((element, index, self) => self.findIndex((e) => e === element) === index) // uniq
-        .filter((c0) => {
-            // return c0 !== ch && !used[c0] && !certain.chars.includes(c0);
+    score += word.split('').UNIQUED().filter((c0) => {
             return c0 !== ch && !used[c0] && !certain_chars.includes(c0);
         }).length;
     return score;
@@ -122,11 +97,8 @@ function reduce(word_array) {
         const count = stat(word_array);
         let chs = "";
         for (const ch in count) { if (2 <= count[ch]) {chs += ch; } }
-        // const re = new RegExp(`^[${RegExp.escape(certain.chars.join("") + chs)}]+$`);
-        // const word = word_array.filter((w) => re.test(w)).SHUFFLE()[0];
         const re = new RegExp(`^[${RegExp.escape(certain_chars.join("") + chs)}]+$`);
         const word = word_array.filter((w) => re.test(w)).SAMPLE();
-        // console.log([re, word]);
         if (word === undefined) { return word_array; }
         word_array = word_array.filter((w) => w != word);
     }
@@ -161,7 +133,7 @@ function yatt(rand_seed = 0) {
     chars.forEach((ch) => {
         if (used[ch] !== undefined) { return; }
         const words = words_for_ch[ch] || [ch];
-        const word = words.SHUFFLE().sort((a, b) => {
+        const word = words.SHUFFLED().sort((a, b) => {
             return score(b, ch, used) - score(a, ch, used);
         })[0];
         //
@@ -179,7 +151,7 @@ function do_yatt() {
     let text = "";
     let line = 0;
     const word_array = yatt();
-    const array = word_array.SHUFFLE();
+    const array = word_array.SHUFFLED();
     while (0 < array.length) {
         const words = new Array();
         [...Array(nwords)].map(() => words.push(array.shift()));
@@ -237,36 +209,6 @@ function make_help(ch, st) {
     return make_span([[ch, "ch"], [st, "stroke"]], ["help"]);
 }
 
-/*
-function show_help(str = "") {
-    // clear help
-    while (stdhelp.firstChild) { stdhelp.removeChild(stdhelp.firstChild); }
-    //
-    for (const a of im.encode2(str)) {
-        if (a[0] === " ") { continue; }
-        stdhelp.appendChild(make_help(a[0], a[1]));
-    }
-    //
-    // empty help
-    // if (!stdhelp.firstChild) { stdhelp.appendChild(make_help(nbsp, nbsp)); }
-    if (!stdhelp.firstChild) { stdhelp.appendChild(make_span([[nbsp]])); }
-}
-
-function show_typo(a) {
-    // clear help
-    while (stdhelp.firstChild) { stdhelp.removeChild(stdhelp.firstChild); }
-    //
-    for (const elm of a) {
-        if (elm[0] === " ") { continue; }
-        stdhelp.appendChild(make_help(elm[0], elm[1]));
-    }
-    //
-    // empty help
-    // if (!stdhelp.firstChild) { stdhelp.appendChild(make_help(nbsp, nbsp)); }
-    if (!stdhelp.firstChild) { stdhelp.appendChild(make_span([[nbsp]])); }
-}
-*/
-
 function do_help(append = false) {
     // clear help
     if (!append) {
@@ -279,7 +221,6 @@ function do_help(append = false) {
     }
     //
     // empty help
-    // if (!stdhelp.firstChild) { stdhelp.appendChild(make_help(nbsp, nbsp)); }
     if (!stdhelp.firstChild) { stdhelp.appendChild(make_span([[nbsp]])); }
 }
 
@@ -324,7 +265,6 @@ function do_result(res) {
     });
     //
     for (const typo of atypo) { lschtypo.push(typo); }
-    // show_typo(atypo);
     helps = atypo;
     do_help();
     //
@@ -383,8 +323,8 @@ function do_reset() {
     stcor = 0;
     sterr = 0;
     stquest = 0;
-    lschweak.length = 0;
-    lschtypo.length = 0;
+    lschweak.CLEAR();
+    lschtypo.CLEAR();
     // prompting = false;
 }
 
@@ -394,7 +334,7 @@ function do_lsreset() {
     lsstcor = 0;
     lssterr = 0;
     lsstquest = 0;
-    lschtypo.length = 0;
+    lschtypo.CLEAR();
     prompting = false;
 }
 
@@ -421,7 +361,6 @@ window.addEventListener("load", (event) => {
     const selectim = document.getElementById("selectim");
     const checkdothelp = document.getElementById("checkdothelp");
     const checkecho = document.getElementById("checkecho");
-    // const selectbook = document.getElementById("selectbook");
     const selectcertain = document.getElementById("selectcertain");
     const selectuncertain = document.getElementById("selectuncertain");
     const selectlesson = document.getElementById("selectlesson");
@@ -434,10 +373,8 @@ window.addEventListener("load", (event) => {
     cookie.read();
     //
     const cookie_im = cookie.get("im");
-    // const cookie_book = cookie.get("book");
     const cookie_certain = cookie.get("certain");
     const cookie_uncertain = cookie.get("uncertain");
-    // const cookie_lesson_index = parseInt(cookie.get(`${cookie_im}/${cookie_book}`) ?? 0); // XXX
     help_style = (cookie.get("help") ?? "dothelp") === "dothelp" ? "dothelp" : "";
     const echo_mode = cookie.get("echo") === "true";
     repeat_mode = cookie.get("repeat") === "true";
@@ -446,39 +383,17 @@ window.addEventListener("load", (event) => {
     checkrepeat.checked = repeat_mode;
     ifkananoma = cookie.get("kananoma") === "true";
     checkkananoma.checked = ifkananoma;
-    // checkkananoma.dispatchEvent(new Event("change"));
     //
     selectim.addEventListener("change", (event) => {
         const index = selectim.selectedIndex;
         im = ims[index];
         cookie.set("im", im.id);
         cookie.write();
-        // XXX
-        // if (im && book) {
-        //     const index = parseInt(cookie.get(`${im.id}/${book.id}`) ?? 0);
-        //     selectlesson.selectedIndex = index;
-        //     selectlesson.dispatchEvent(new Event("change"));
-        // }
         // ヒント (ヘルプ) を描画し直す
         helps = helps.map((h) => im.encode2(h[0])[0]);
         do_help();
         stdin.focus();
     });
-    //
-    // selectbook.addEventListener("change", (event) => {
-    //     const index = selectbook.selectedIndex;
-    //     book = books[index];
-    //     cookie.set("book", book.id);
-    //     cookie.write();
-    //     // XXX
-    //     /*
-    //     if (im && book) {
-    //         const index = parseInt(cookie.get(`${im.id}/${book.id}`) ?? 0);
-    //         selectlesson.selectedIndex = index;
-    //         selectlesson.dispatchEvent(new Event("change"));
-    //     }
-    //     */
-    // });
     //
     const make_lessons = () => {
         while (selectlesson.firstChild) { selectlesson.removeChild(selectlesson.firstChild); }
@@ -491,7 +406,6 @@ window.addEventListener("load", (event) => {
             selectlesson.appendChild(option);
         }
         selectlesson.selectedIndex = 0;
-        // selectlesson.options[0].selected = true;
         selectlesson.dispatchEvent(new Event("change"));
     };
     //
@@ -520,13 +434,6 @@ window.addEventListener("load", (event) => {
         lesson_index = index;
         text_index = null;
         text = null;
-        //
-        /*
-        cookie.set(`${im.id}/${book.id}`, index);
-        cookie.write();
-        */
-        //
-        // show_help(lesson.chars);
         helps = lesson.chars.split("").map((ch) => im.encode2(ch)[0]);
         do_help();
         clear();
@@ -549,15 +456,6 @@ window.addEventListener("load", (event) => {
     }
     selectim.dispatchEvent(new Event("change"));
     //
-    // for (const bk of books) {
-    //     const option = document.createElement("option");
-    //     option.value = bk.id;
-    //     option.text = bk.title;
-    //     selectbook.appendChild(option);
-    //     if (bk.id === cookie_book) { option.selected = true; }
-    // }
-    // selectbook.dispatchEvent(new Event("change"));
-    //
     for (const cer of certains) {
         const option = document.createElement("option");
         option.value = cer.id;
@@ -576,28 +474,11 @@ window.addEventListener("load", (event) => {
     }
     selectuncertain.dispatchEvent(new Event("change"));
     //
-    /*
-    let i = 0;
-    for (const ls of book.lessons) {
-        const option = document.createElement("option");
-        option.value = i; i += 1;
-        option.text = `${ls.name}. ${ls.text[0]}`;
-        selectlesson.appendChild(option);
-    }
-    //
-    if (selectlesson.options[cookie_lesson_index]) {
-        selectlesson.options[cookie_lesson_index].selected = true;
-    }
-    //
-    */
-    // make_lessons();
-    //
     stdin.addEventListener("keyup", (event) => {
         const input = stdin.value;
         if (!prompting && input === "" && text_index === null && text === null && event.key === "Backspace") {
-            // XXX: レッスン開始時に空入力に BS で prompting に (ad hoc)
+            // XXX: レッスン開始時に BS の空打ちで prompting に (ad hoc)
             puts();
-            // putm("続けますか? 次へ(N)/もう一度(A)/前へ(P)/終了(Q)");
             putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/終了(Q)");
             prompting = true;
         }
@@ -606,16 +487,13 @@ window.addEventListener("load", (event) => {
         } else if (event.key === "Enter") {
             if (text === null) {
                 clear();
-                // show_help();
-                helps.length = 0;
+                helps.CLEAR();
                 do_help();
             } else if (text !== "" && input === "") {
-                // XXX: レッスン中に空入力でスキップ (ad hoc)
+                // XXX: レッスン中に Return 空打ちでスキップ (ad hoc)
                 putm("スキップしました");
                 puts();
             } else {
-                // do_result(do_input_text(text, input).res);
-                // puts();
                 const res = do_input_text(text, input);
                 do_result(res.res);
                 if (repeat_mode && res.sterr !== 0) {
@@ -646,12 +524,9 @@ window.addEventListener("load", (event) => {
                 text_index = null;
                 //
                 if (0 < lschtypo.length) {
-                    // - 【JavaScript】配列の重複を取り除く
-                    // - https://zenn.dev/nori_maki/articles/e5ed288991017d
-                    const typo = lschtypo.filter((element, index, self) => self.findIndex((e) => e[0] === element[0] && e[1] === element[1]) === index); // unique by typo char and strokes
+                    const typo = lschtypo.UNIQUED((a, b) => a[0] === b[0] && a[1] === b[1]);
                     // XXX: [この課でまちがえた文字] のヘルプは表示しない
                     // (あるいは [まちがえた文字] とは別に表示する)
-                    // show_typo(typo);
                     //
                     const e = typo.map((t) => [t[0], "err"]);
                     e.unshift(["[この課でまちがえた文字] "]);
@@ -659,7 +534,6 @@ window.addEventListener("load", (event) => {
                 }
                 //
                 puts();
-                // putm("続けますか? 次へ(N)/もう一度(A)/前へ(P)/終了(Q)");
                 putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/終了(Q)");
                 prompting = true;
             }
@@ -712,8 +586,7 @@ window.addEventListener("load", (event) => {
                 stdin.blur();
                 //
                 do_reset();
-                // show_help();
-                helps.length = 0;
+                helps.CLEAR();
                 do_help();
                 break;
             default:
@@ -746,25 +619,20 @@ window.addEventListener("load", (event) => {
     checkkananoma.addEventListener("change", (event) => {
         ifkananoma = checkkananoma.checked;
         certain_chars = ifkananoma ? certain.chars.concat(kananomachars) : certain.chars;
-        // make_lessons();
         if (certain && uncertain) { make_lessons(); }
         cookie.set("kananoma", ifkananoma);
         cookie.write();
     });
     //
     buttonhint.addEventListener("click", (event) => {
-        // case "h":
-        // helps.length = 0;
         if (text !== null) {
             helps = text.split("").map((ch) => im.encode2(ch)[0]); // XXX
         } else {
-            helps = lschtypo.filter((element, index, self) => self.findIndex((e) => e[0] === element[0] && e[1] === element[1]) === index); // unique by typo char and strokes
+            helps = lschtypo.UNIQUED((a, b) => a[0] === b[0] && a[1] === b[1]);
             // stdin.value = "";
         }
         do_help();
         stdin.focus();
-        // return;
-        // break;
     });
     //
     checkrepeat.addEventListener("change", (event) => {
@@ -775,7 +643,6 @@ window.addEventListener("load", (event) => {
     });
     //
     checkecho.dispatchEvent(new Event("change"));
-    // checkkananoma.dispatchEvent(new Event("change"));
     //
     do_reset();
 });

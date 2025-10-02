@@ -1,3 +1,26 @@
+Array.prototype.CLEAR = function() {
+  this.length = 0;
+  return this;
+}
+
+Array.prototype.SAMPLE = function() {
+    return this[Math.floor(Math.random() * this.length)];
+}
+
+Array.prototype.SHUFFLED = function() {
+    const array = [...this];        // copy array
+    for (let i = array.length - 1; 0 < i; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+Array.prototype.UNIQUED = function(compareFn = (a, b) => a === b) {
+    return this.filter((element, index, self) =>
+        self.findIndex((e) => compareFn(e, element)) === index);
+}
+
 // - javascript - Escape regexp strings? - Stack Overflow
 // - https://stackoverflow.com/questions/6828637/escape-regexp-strings
 function preg_quote (str, delimiter) {
