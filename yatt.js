@@ -457,6 +457,9 @@ window.addEventListener("load", (event) => {
     }
     selectim.dispatchEvent(new Event("change"));
     //
+    const certains = charsets.filter((cs) => cs.option.certain);
+    const uncertains = charsets.filter((cs) => cs.option.uncertain);
+    //
     for (const cer of certains) {
         const option = document.createElement("option");
         option.value = cer.id;

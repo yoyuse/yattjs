@@ -1,6 +1,6 @@
 // TUT-Code 二打漢字
-certains.push(
-    new CERTAIN("certain-tut-2st", "TUT-Code 二打漢字 725 字", `
+charsets.push(
+    new Charset("charset-tut-2st", "TUT-Code 二打漢字 725 字", `
 愛悪安案以伊位委意違医井育一印員引院右宇羽雨浦運営映栄永英衛駅越円園演央応横王岡
 億屋音下化何価加可家科果歌河火花華課過画介会解回改械海界開階外害街各格確角閣学楽
 額割活株刊巻完官感環監管観間関館丸含岩顔企器基寄期機帰気規記起技義議吉久休及宮急

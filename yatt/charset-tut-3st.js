@@ -1,6 +1,6 @@
 // TUT-Code 三打漢字
-uncertains.push(
-    new UNCERTAIN("uncertain-tut-3st", "TUT-Code 三打漢字 1800 字", `
+charsets.push(
+    new Charset("charset-tut-3st", "TUT-Code 三打漢字 1800 字", `
 亜阿哀挨逢葵茜握渥旭葦芦梓圧斡扱宛姐飴絢綾鮎或粟庵暗闇鞍杏依偉囲夷威尉惟慰易椅為
 畏異移維緯胃萎衣遺亥域郁磯壱溢逸稲茨芋允咽因姻飲淫胤蔭陰隠韻烏迂卯丑碓臼渦嘘唄瓜
 噂云雲餌叡影曳泳洩瑛詠鋭液疫益悦謁閲榎厭堰奄宴延怨援沿炎煙燕猿縁艶苑遠鉛塩於汚甥
