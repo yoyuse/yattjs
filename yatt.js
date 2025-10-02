@@ -5,13 +5,14 @@ let stdout = null;
 let stdhelp = null;
 
 let im = null;
-let book = null;
+// let book = null;
 let certain = null;
 let uncertain = null;
 let pattern = /^$/;
 let words_for_ch = new Object();
 let words_count_for_ch = new Object();
 
+let lessons;
 let lesson = null;
 let lesson_index = null;
 let text = null;
@@ -398,8 +399,8 @@ window.addEventListener("load", (event) => {
     const make_lessons = () => {
         while (selectlesson.firstChild) { selectlesson.removeChild(selectlesson.firstChild); }
         let i = 0;
-        book = {id: "yatt", title: "YATT", lessons: do_yatt()};
-        for (const ls of book.lessons) {
+        lessons = do_yatt();
+        for (const ls of lessons) {
             const option = document.createElement("option");
             option.value = i; i += 1;
             option.text = `${ls.name}. ${ls.text[0]}`;
@@ -430,14 +431,14 @@ window.addEventListener("load", (event) => {
     //
     selectlesson.addEventListener("change", (event) => {
         const index = selectlesson.selectedIndex;
-        lesson = book.lessons[index];
+        lesson = lessons[index];
         lesson_index = index;
         text_index = null;
         text = null;
         helps = lesson.chars.split("").map((ch) => im.encode2(ch)[0]);
         do_help();
         clear();
-        const ls = book.lessons[selectlesson.selectedIndex];
+        const ls = lessons[selectlesson.selectedIndex];
         putm();
         putm(`${ls.name}. ${ls.text[0]}`);
         putm();
@@ -556,11 +557,11 @@ window.addEventListener("load", (event) => {
             switch (event.key.toLowerCase()) {
             case "n":
             case " ":
-                lesson_index = (lesson_index + 1) % book.lessons.length;
+                lesson_index = (lesson_index + 1) % lessons.length;
                 prompting = false;
                 break;
             case "p":
-                lesson_index = (lesson_index + book.lessons.length - 1) % book.lessons.length;
+                lesson_index = (lesson_index + lessons.length - 1) % lessons.length;
                 prompting = false;
                 break;
             case "a":
