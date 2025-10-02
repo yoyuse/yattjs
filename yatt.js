@@ -24,8 +24,8 @@ const cookie = new Cookie(cookie_name);
 let help_style = "dothelp";
 let helps = new Array();
 let repeat_mode = false;
-let ifkananoma = false;
-const kananomachars = `
+let ifkana = false;
+const kanachars = `
 々ー
 ぁあぃいぅうぇえぉお かがきぎくぐけげこご さざしじすずせぜそぞ
 ただちぢっつづてでとど なにぬねの はばぱひびぴふぶぷへべぺほぼぽ
@@ -365,7 +365,7 @@ window.addEventListener("load", (event) => {
     const selectcertain = document.getElementById("selectcertain");
     const selectuncertain = document.getElementById("selectuncertain");
     const selectlesson = document.getElementById("selectlesson");
-    const checkkananoma = document.getElementById("checkkananoma");
+    const checkkana = document.getElementById("checkkana");
     stdout = document.getElementById("stdout");
     stdin = document.getElementById("stdin");
     stdhelp = document.getElementById("stdhelp");
@@ -382,8 +382,8 @@ window.addEventListener("load", (event) => {
     checkdothelp.checked = help_style === "dothelp";
     checkecho.checked = echo_mode;
     checkrepeat.checked = repeat_mode;
-    ifkananoma = cookie.get("kananoma") === "true";
-    checkkananoma.checked = ifkananoma;
+    ifkana = cookie.get("kana") === "true";
+    checkkana.checked = ifkana;
     //
     selectim.addEventListener("change", (event) => {
         const index = selectim.selectedIndex;
@@ -416,7 +416,7 @@ window.addEventListener("load", (event) => {
         cookie.set("certain", certain.id);
         cookie.write();
         //
-        certain_chars = ifkananoma ? certain.chars.concat(kananomachars) : certain.chars;
+        certain_chars = ifkana ? certain.chars.concat(kanachars) : certain.chars;
         if (certain && uncertain) { make_lessons(); }
     });
     //
@@ -617,11 +617,11 @@ window.addEventListener("load", (event) => {
         cookie.write();
     });
     //
-    checkkananoma.addEventListener("change", (event) => {
-        ifkananoma = checkkananoma.checked;
-        certain_chars = ifkananoma ? certain.chars.concat(kananomachars) : certain.chars;
+    checkkana.addEventListener("change", (event) => {
+        ifkana = checkkana.checked;
+        certain_chars = ifkana ? certain.chars.concat(kanachars) : certain.chars;
         if (certain && uncertain) { make_lessons(); }
-        cookie.set("kananoma", ifkananoma);
+        cookie.set("kana", ifkana);
         cookie.write();
     });
     //
