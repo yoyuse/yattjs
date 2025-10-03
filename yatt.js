@@ -480,8 +480,8 @@ window.addEventListener("load", (event) => {
     //
     stdin.addEventListener("keyup", (event) => {
         const input = stdin.value;
-        if (!prompting && input === "" && text_index === null && text === null && event.key === "Backspace") {
-            // XXX: レッスン開始時に BS の空打ちで prompting に (ad hoc)
+        if (!prompting && input === "" && text_index === null && text === null && event.key === "Enter" && event.shiftKey) {
+            // XXX: レッスン開始時に Shift+Return 空打ちで prompting に (ad hoc)
             puts();
             putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/終了(Q)");
             prompting = true;
