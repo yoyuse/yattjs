@@ -24,7 +24,7 @@ function make_breadcrumb() {
         if (0 < i) {
             const span = document.createElement("span");
             span.classList.add("path-separator");
-            span.textContent = " > ";
+            span.textContent = " / ";
             obj.appendChild(span);
         }
         url += "/" + arr[i];
