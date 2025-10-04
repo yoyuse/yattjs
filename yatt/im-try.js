@@ -3,7 +3,7 @@
 // - http://hon-kon.o.oo7.jp/trycode.html
 // > Trycodeマニュアル 2020-12-04
 ims.push(
-    new IM("try", "Trycode 2849",
+    new IM("im-try", "Trycode 2849",
            {
                " ": "  ",
                "、": "jd",

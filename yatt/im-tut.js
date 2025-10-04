@@ -1,6 +1,6 @@
 // TUT-Code
 ims.push(
-    new IM("tut", "TUT-Code",
+    new IM("im-tut", "TUT-Code",
            {
                "、": "d ",
                "。": "f ",

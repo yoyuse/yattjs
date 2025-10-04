@@ -1,6 +1,6 @@
 // T-Code
 ims.push(
-    new IM("t", "T-Code",
+    new IM("im-t", "T-Code",
            {
                "、": "jd",
                "。": "hf",

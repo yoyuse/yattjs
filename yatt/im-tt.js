@@ -1,6 +1,6 @@
 // TT-code 4.0
 ims.push(
-    new IM("tt", "TT-code 4.0",
+    new IM("im-tt", "TT-code 4.0",
            {
                "　": "jf.z",
                "、": "jd",
