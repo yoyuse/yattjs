@@ -21,6 +21,7 @@ let text_index = null;
 const cookie_name = "yatt";
 const cookie = new Cookie(cookie_name);
 
+let ifdvorak = false;
 let help_style = "dothelp";
 let helps = new Array();
 let repeat_mode = false;
@@ -187,6 +188,7 @@ function make_span(a, classList = []) {
 }
 
 function make_help(ch, st) {
+    const st_external = ifdvorak ? todvorak(st) : st;
     if (help_style === "dothelp") {
         const span = document.createElement("span");
         let s = document.createElement("span");
@@ -196,18 +198,18 @@ function make_help(ch, st) {
         s = document.createElement("span");
         s.classList.add("stroke");
         // XXX
-        if (ch === st) { s.classList.add("outset"); }
+        if (ch === st_external) { s.classList.add("outset"); }
         //
-        s.title = st;
+        s.title = st_external;
         s.appendChild(dothelp(st));
         span.appendChild(s);
         span.classList.add("help", "dothelp");
         return span;
     }
     // XXX
-    if (ch === st) { return make_span([[ch, "ch"], [st, "stroke", "outset"]], ["help"]); }
+    if (ch === st_external) { return make_span([[ch, "ch"], [st_external, "stroke", "outset"]], ["help"]); }
     //
-    return make_span([[ch, "ch"], [st, "stroke"]], ["help"]);
+    return make_span([[ch, "ch"], [st_external, "stroke"]], ["help"]);
 }
 
 function do_help(append = false) {
@@ -229,7 +231,8 @@ function do_input_text(str, s) {
     lstimeend = (new Date()).getTime();
     lstime += lstimeend - lstimebeg;
     //
-    const r = im.encode2(str);
+    // const r = im.encode2(str, ifdvorak);
+    const r = im.encode2(ifdvorak ? fromdvorak(str) : str);
     //
     const m = lcs.match(r, s);
     lsstall += m.stall;
@@ -360,6 +363,7 @@ function do_score(ms, nraw, stcor, sterr, stquest) {
 
 window.addEventListener("load", (event) => {
     const selectim = document.getElementById("selectim");
+    const checkdvorak = document.getElementById("checkdvorak");
     const checkdothelp = document.getElementById("checkdothelp");
     const checkecho = document.getElementById("checkecho");
     const selectcertain = document.getElementById("selectcertain");
@@ -376,9 +380,11 @@ window.addEventListener("load", (event) => {
     const cookie_im = cookie.get("im");
     const cookie_certain = cookie.get("certain");
     const cookie_uncertain = cookie.get("uncertain");
+    ifdvorak = cookie.get("dvorak") === "true";
     help_style = (cookie.get("help") ?? "dothelp") === "dothelp" ? "dothelp" : "";
     const echo_mode = cookie.get("echo") === "true";
     repeat_mode = cookie.get("repeat") === "true";
+    checkdvorak.checked = ifdvorak;
     checkdothelp.checked = help_style === "dothelp";
     checkecho.checked = echo_mode;
     checkrepeat.checked = repeat_mode;
@@ -498,7 +504,8 @@ window.addEventListener("load", (event) => {
                 putm("スキップしました");
                 puts();
             } else {
-                const res = do_input_text(text, input);
+                // const res = do_input_text(text, input);
+                const res = do_input_text(text, ifdvorak ? fromdvorak(input) : input);
                 do_result(res.res);
                 if (repeat_mode && res.sterr !== 0) {
                     stdin.value = "";
@@ -602,6 +609,14 @@ window.addEventListener("load", (event) => {
                 selectlesson.dispatchEvent(new Event("change"));
             }
         }
+    });
+    //
+    checkdvorak.addEventListener("change", (event) => {
+        ifdvorak = checkdvorak.checked;
+        do_help();
+        stdin.focus();
+        cookie.set("dvorak", ifdvorak);
+        cookie.write();
     });
     //
     checkdothelp.addEventListener("change", (event) => {

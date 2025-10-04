@@ -17,7 +17,7 @@ function dothelp(st = "") {
     }
     //
     const [deprefixed, prefix] = im.deprefix(st);
-    const keys = deprefixed.split("").map((s) => "1234567890qwertyuiopasdfghjkl;zxcvbnm,./".indexOf(s)); // array of 0..39 or -1
+    const keys = deprefixed.split("").map((s) => kbdqwerty.indexOf(s)); // array of 0..39 or -1
     const kbd = new Array(40);
     let ifw = false;
     let st1 = put_st1;
@@ -35,7 +35,7 @@ function dothelp(st = "") {
     default: break;
     }
     keys.forEach((k, n) => {
-        if (k < 0) { return; }
+        if (k < 0 || 40 <= k) { return; }
         if (kbd[k] !== undefined) {
             if (ifw) { kbd[k] = stx; }
             else { ifw = true; kbd[k] = stw; }
