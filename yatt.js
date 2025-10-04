@@ -147,6 +147,7 @@ function yatt(rand_seed = 0) {
     return word_array;
 }
 
+/*
 function do_yatt() {
     const nlines = 4;           // 1 レッスンあたりの行数
     const nwords = 6;           // 1 行あたりの語数
@@ -171,6 +172,20 @@ function do_yatt() {
         const text = lesson.split(/\n+/);
         return {name: `Lesson ${i}`, chars: "", text: text};
     });
+}
+*/
+
+// - [Javascript] 一次元配列の要素をｎ個ずつに分割した新しい二次元配列を返す #JavaScript - Qiita
+// - https://qiita.com/STSHISHO/items/e50b239927605114742d
+// const chunk = (a, n) => a.flatMap((_, i, a) => i % n ? [] : [a.slice(i, i + n)]);
+Array.prototype.CHUNK = function(n) {
+    return this.flatMap((_, i, a) => i % n ? [] : [a.slice(i, i + n)]);
+}
+
+function do_yatt() {
+    const nlines = 4;           // 1 レッスンあたりの行数
+    const nwords = 6;           // 1 行あたりの語数
+    return yatt().SHUFFLED().CHUNK(nwords).CHUNK(nlines).map((lesson, i) => ({name: `Lesson ${i + 1}`, chars: "", text: lesson.map((a) => a.join(' '))}));
 }
 // /YATT
 
@@ -412,6 +427,14 @@ window.addEventListener("load", (event) => {
             option.text = `${ls.name}. ${ls.text[0]}`;
             selectlesson.appendChild(option);
         }
+        // XXX
+        if (lessons.length === 0) {
+            const option = document.createElement("option");
+            option.value = i; i += 1;
+            option.text = "レッスンはありません";
+            selectlesson.appendChild(option);
+        }
+        //
         selectlesson.selectedIndex = 0;
         selectlesson.dispatchEvent(new Event("change"));
     };
@@ -436,6 +459,18 @@ window.addEventListener("load", (event) => {
     });
     //
     selectlesson.addEventListener("change", (event) => {
+        // XXX
+        if (lessons.length === 0) {
+            clear();
+            putm();
+            putm("レッスンはありません");
+            putm();
+            //
+            stdin.focus();
+            do_lsreset();
+            return;
+        }
+        //
         const index = selectlesson.selectedIndex;
         lesson = lessons[index];
         lesson_index = index;
@@ -486,6 +521,12 @@ window.addEventListener("load", (event) => {
     //
     stdin.addEventListener("keyup", (event) => {
         const input = stdin.value;
+        // XXX
+        if (lessons.length === 0) {
+            stdin.value = "";
+            return;
+        }
+        //
         if (!prompting && input === "" && text_index === null && text === null && event.key === "Enter" && event.shiftKey) {
             // XXX: レッスン開始時に Shift+Return 空打ちで prompting に (ad hoc)
             puts();
