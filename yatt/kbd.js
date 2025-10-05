@@ -6,18 +6,18 @@ const kbddvorak =
       '!@#$%^&*()"<>PYFGCRLAOEUIDHTNS:QJKXBMWVZ{}|~?+_';
 
 
-const todvorakmap = new Object();
-const fromdvorakmap = new Object();
+const todvorakmap = new Map();
+const fromdvorakmap = new Map();
 
 for (let k = 0; k < kbdqwerty.length; k++) {
-    todvorakmap[kbdqwerty[k]] = kbddvorak[k];
-    fromdvorakmap[kbddvorak[k]] = kbdqwerty[k];
+    todvorakmap.set(kbdqwerty[k], kbddvorak[k]);
+    fromdvorakmap.set(kbddvorak[k], kbdqwerty[k]);
 }
 
 function todvorak(str) {
-    return str.split('').map((ch) => todvorakmap[ch] ?? ch).join('')
+    return str.split('').map((ch) => todvorakmap.get(ch) ?? ch).join('')
 }
 
 function fromdvorak(str) {
-    return str.split('').map((ch) => fromdvorakmap[ch] ?? ch).join('')
+    return str.split('').map((ch) => fromdvorakmap.get(ch) ?? ch).join('')
 }

@@ -4,7 +4,7 @@
 
 function Cookie(name) {
     this.name = name;
-    this.content = new Object();
+    this.content = new Map();
     return this;
 }
 
@@ -12,14 +12,14 @@ Cookie.prototype.read = function() {
     const ck = document.cookie;
     const re = new RegExp(this.name + "=([^;]+);"); // XXX escape name?
     let m = (ck + ';').match(re);
-    this.content = new Object;
+    this.content.clear();
     if (m) {
         const a = decodeURIComponent(m[1]).split(':');
         for (let i = 0; i < a.length; i++) {
             if (a[i] == '') { continue; } // such as last case?
             m = a[i].match(/([^=]+)=(.*)/);
             if (m) {
-                this.content[m[1]] = m[2];
+                this.content.set(m[1], m[2]);
             }
         }
     }
@@ -27,19 +27,17 @@ Cookie.prototype.read = function() {
 }
 
 Cookie.prototype.set = function(key, val) {
-    this.content[key] = val;
+    this.content.set(key, val);
     return this;
 }
 
 Cookie.prototype.get = function(key) {
-    return this.content[key];
+    return this.content.get(key);
 }
 
 Cookie.prototype.write = function() {
     let s = '';
-    for (const p in this.content) {
-        s += p + '=' + this.content[p] + ':';
-    }
+    for (const [key, val] of this.content) { s += `${key}=${val}:`; }
     s = this.name + '=' + encodeURIComponent(s) + ';';
     const d = new Date();
     d.setFullYear(d.getFullYear() + 1); // expires to 1 year
@@ -56,8 +54,6 @@ Cookie.prototype.remove = function() {
 
 Cookie.prototype.showcontent = function() {
     let s = '';
-    for (const p in this.content) {
-        s += p + '=' + this.content[p] + ':';
-    }
+    for (const [key, val] of this.content) { s += `${key}=${val}:`}
     return s;
 }

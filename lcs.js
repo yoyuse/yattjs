@@ -15,14 +15,14 @@ function LCS() {
     for (let j = 0; j <= this.MAXJ; j++) {
         this.mt[j] = new Array(this.MAXI + 1);
         for (let i = 0; i <= this.MAXI; i++) {
-            this.mt[j][i] = new Object(); // {m:0, j:null, i:null};
+            this.mt[j][i] = new Map(); // {m:0, j:null, i:null};
         }
     }
 
     // match data
     this.md = new Array(this.MAXM + 1);
     for (let n = 0; n <= this.MAXM; n++) {
-        this.md[n] = new Object();  // {len:0, j:null, i:null};
+        this.md[n] = new Map(); // {len:0, j:null, i:null};
     }
 
     this.res = null;
@@ -61,7 +61,7 @@ LCS.prototype.match = function(r, s) {
     // init match table
     for (let j = 0; j <= maxj; j++) {
         for (let i = 0; i <= maxi; i++) {
-            this.mt[j][i].m = 0;
+            this.mt[j][i].set('m', 0);
         }
     }
 
@@ -74,45 +74,49 @@ LCS.prototype.match = function(r, s) {
             if (((j + len) <= maxj) && (relm == s.substr(j, len))) {
                 // matched
                 for (let dj = 0; dj < len; dj++) {
-                    this.mt[j + dj + 1][i + 1].m =
-                        Math.max(this.mt[j + dj + 1][i + 1].m,
-                                 Math.max(this.mt[j + dj + 1][i].m,
-                                          this.mt[j + dj][i + 1].m));
+                    this.mt[j + dj + 1][i + 1].set(
+                        'm',
+                        Math.max(this.mt[j + dj + 1][i + 1].get('m'),
+                                 this.mt[j + dj + 1][i].get('m'),
+                                 this.mt[j + dj][i + 1].get('m'))
+                    );
                 }
-                m = this.mt[j][i].m + len;
-                if (this.mt[j + len][i + 1].m < m) {
-                    this.mt[j + len][i + 1].m = m;
-                    this.mt[j + len][i + 1].j = j;
-                    this.mt[j + len][i + 1].i = i;
+                m = this.mt[j][i].get('m') + len;
+                if (this.mt[j + len][i + 1].get('m') < m) {
+                    this.mt[j + len][i + 1].set('m', m);
+                    this.mt[j + len][i + 1].set('j', j);
+                    this.mt[j + len][i + 1].set('i', i);
                 }
 
             } else {
                 // NOT matched
-                this.mt[j + 1][i + 1].m =
-                    Math.max(this.mt[j + 1][i + 1].m,
-                             Math.max(this.mt[j + 1][i].m,
-                                      this.mt[j][i + 1].m));
+                this.mt[j + 1][i + 1].set(
+                    'm',
+                    Math.max(this.mt[j + 1][i + 1].get('m'),
+                             this.mt[j + 1][i].get('m'),
+                             this.mt[j][i + 1].get('m'))
+                );
             }
         } // i
     } // j
 
     // go backward and make match data
     let nmatch = 0, i, j;
-    this.md[nmatch].j = maxj;
-    this.md[nmatch].i = maxi;
-    this.md[nmatch].len = 0;
-    for (nmatch = 1, j = maxj, i = maxi, m = this.mt[j][i].m;
+    this.md[nmatch].set('j', maxj);
+    this.md[nmatch].set('i', maxi);
+    this.md[nmatch].set('len', 0);
+    for (nmatch = 1, j = maxj, i = maxi, m = this.mt[j][i].get('m');
          0 < m;
          nmatch += 1) {
-        while (0 < i && this.mt[j][i - 1].m == m) { i -= 1; }
-        while (0 < j && this.mt[j - 1][i].m == m) { j -= 1; }
-        const prevj = this.mt[j][i].j;
-        const previ = this.mt[j][i].i;
-        this.md[nmatch].j = prevj;
-        this.md[nmatch].i = previ;
-        this.md[nmatch].len = ra[previ].length;
+        while (0 < i && this.mt[j][i - 1].get('m') == m) { i -= 1; }
+        while (0 < j && this.mt[j - 1][i].get('m') == m) { j -= 1; }
+        const prevj = this.mt[j][i].get('j');
+        const previ = this.mt[j][i].get('i');
+        this.md[nmatch].set('j', prevj);
+        this.md[nmatch].set('i', previ);
+        this.md[nmatch].set('len', ra[previ].length);
         j = prevj; i = previ;
-        m = this.mt[j][i].m;
+        m = this.mt[j][i].get('m');
     }
 
     // result
@@ -124,9 +128,9 @@ LCS.prototype.match = function(r, s) {
 
     j = 0, i = 0;
     for (let n = nmatch - 1; 0 <= n; n--) {
-        const len = this.md[n].len;
-        const nextj = this.md[n].j;
-        const nexti = this.md[n].i;
+        const len = this.md[n].get('len');
+        const nextj = this.md[n].get('j');
+        const nexti = this.md[n].get('i');
 
         const erri = [];
         let errj = '';

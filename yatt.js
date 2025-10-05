@@ -9,8 +9,8 @@ let im = null;
 let certain = null;
 let uncertain = null;
 let pattern = /^$/;
-let words_for_ch = new Object();
-let words_count_for_ch = new Object();
+let words_for_ch = new Map();
+let words_count_for_ch = new Map();
 
 let lessons;
 let lesson = null;
@@ -61,15 +61,14 @@ function make_pattern() {
 }
 
 function read_words() {
-    words_for_ch = new Object();
-    words_count_for_ch = new Object();
+    words_for_ch.clear();
+    words_count_for_ch.clear();
     for (const word of words) {
         if (!pattern.test(word)) {continue;}
         word.split('').forEach((ch) => {
-            if (words_for_ch[ch] === undefined) { words_for_ch[ch] = new Array; }
-            words_for_ch[ch].push(word);
-            if (words_count_for_ch[ch] === undefined) { words_count_for_ch[ch] = 0; }
-            words_count_for_ch[ch] += 1;
+            if (words_for_ch.get(ch) === undefined) { words_for_ch.set(ch, new Array()); }
+            words_for_ch.get(ch).push(word);
+            words_count_for_ch.set(ch, (words_count_for_ch.get(ch) ?? 0) + 1);
         });
     }
 }
@@ -78,17 +77,16 @@ function score(word, ch, used) {
     let score = 0;
     score -= Math.abs(2 - word.length); // 2 字熟語を優先
     score += word.split('').UNIQUED().filter((c0) => {
-            return c0 !== ch && !used[c0] && !certain_chars.includes(c0);
-        }).length;
+        return c0 !== ch && !used.get(c0) && !certain_chars.includes(c0);
+    }).length;
     return score;
 }
 
 function stat(word_array) {
-    let count = new Object;
+    let count = new Map();
     word_array.forEach((word) => {
         word.split('').forEach((ch) => {
-            if (count[ch] === undefined) { count[ch] = 0; }
-            count[ch] += 1;
+            count.set(ch, (count.get(ch) ?? 0) + 1);
         });
     });
     return count;
@@ -98,7 +96,7 @@ function reduce(word_array) {
     while(true) {
         const count = stat(word_array);
         let chs = "";
-        for (const ch in count) { if (2 <= count[ch]) {chs += ch; } }
+        for (const [key, val] of count) { if (2 <= val) { chs += key; } }
         const re = new RegExp(`^[${RegExp.escape(certain_chars.join("") + chs)}]+$`);
         const word = word_array.filter((w) => re.test(w)).SAMPLE();
         if (word === undefined) { return word_array; }
@@ -109,7 +107,7 @@ function reduce(word_array) {
 function check(word_array) {
     const count = stat(word_array);
     let chs = "";
-    for (const ch in count) { if (count[ch] === undefined) { chs += ch; } }
+    for (const [key, val] of count) { if (val === undefined) { chs += key; } }
     console.log("check: " + (chs === "" ? "OK" : `FAILED: ${chs}`));
 }
 
@@ -119,28 +117,28 @@ function yatt(rand_seed = 0) {
     // - JavaScriptで再現性のある乱数を生成する + 指定した範囲の乱数を生成する
     // - https://sbfl.net/blog/2017/06/01/javascript-reproducible-random/
     //
-    let word_array = new Array;
-    let used = new Object;
+    let word_array = new Array();
+    let used = new Map();
     //
     make_pattern();
     read_words();
     //
     // 非破壊的にソート
     const chars = Array.from(uncertain.chars).sort((a, b) => {
-        const count_a = words_count_for_ch[a] || 0;
-        const count_b = words_count_for_ch[b] || 0;
+        const count_a = words_count_for_ch.get(a) ?? 0;
+        const count_b = words_count_for_ch.get(b) ?? 0;
         return count_a - count_b;
     });
     //
     chars.forEach((ch) => {
-        if (used[ch] !== undefined) { return; }
-        const words = words_for_ch[ch] || [ch];
+        if (used.get(ch) !== undefined) { return; }
+        const words = words_for_ch.get(ch) ?? [ch];
         const word = words.SHUFFLED().sort((a, b) => {
             return score(b, ch, used) - score(a, ch, used);
         })[0];
         //
         word_array.push(word);
-        word.split('').forEach((ch) => { used[ch] = true; });
+        word.split('').forEach((ch) => { used.set(ch, true); });
     });
     word_array = reduce(word_array);
     // this.check(word_array);
