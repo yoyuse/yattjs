@@ -31,16 +31,40 @@
        right: 0; bottom: 4px;
      }
      /*  */
-     dt, .dt { font-weight: bold; }
-     ul.dl { padding-left: 0; }
-     ul.dl li { list-style-type: none; }
-     ul.dl li span.dt {
-       display: inline-block;
-       margin-right: 0.5em;
-       text-align: right;
-       /* width: 4.0em; */
-       width: auto;
+     main {
+       margin-left: auto;
+       margin-right: auto;
+       max-width: 640px;
      }
+     /*  */
+     figure.quotation blockquote { margin: 0; }
+     figure.quotation {
+       border-left: 5px solid #9E9E9E;
+       margin: 0 0 0 2rem;
+       padding-left: 8px;
+       position: relative;
+     }
+     figure.quotation::before, figure.quotation::after {
+       color: #9E9E9E;
+       font-size: 10rem;
+       line-height: 0;
+       opacity: 0.4;
+       position: absolute;
+     }
+     figure.quotation::before {
+       content: '“';
+       top: 4rem; left: 0;
+     }
+     figure.quotation::after {
+       content: '”';
+       right: 0; bottom: 0rem;
+     }
+     figure.quotation p, figure.quotation cite {
+       font-style: italic;
+       padding: 0 4rem;
+       position: relative;
+     }
+     figure.quotation figcaption { text-align: right; }
      /*  */
      a:link, a:visited { color: #1E88E5; }
     </style>
@@ -58,11 +82,70 @@
         </div>
       </header>
 
-      <ul class="dl">
-        <li>
-          <span class="dt"><a href="yatt.html">yatt.js</a></span>
-          <span class="dd">Yet Another T-Code Trainer (JavaScript version)</span>
-        </li>
-      </ul>
+      <main>
+        <p>
+          <a href="yatt.html">yatt.js</a>
+          (Yet Another T-Code Trainer, JavaScript version)
+          は、
+          漢字直接入力 T-Code などの復習に特化した練習プログラムです。
+          かつて存在した T-Code トレーナー yatt の仕様をもとに
+          JavaScript で実装して
+          Web ブラウザ上で動作するようにしたものです。
+        </p>
+
+        <p>
+          オリジナルの yatt は、
+          西岡真吾さんが作成し、田川典生さんがメンテナンスしていたツールで、
+          すでに覚えた文字を効率的に反復練習するための練習テキストを生成する C 言語プログラムです。
+          田川典生さんのページで入手できる tserv パッケージに含まれています
+          (<a href="https://web.archive.org/web/20090529051041/http://www.tcp-ip.or.jp/~tagawa/index.html">Voice from space</a>
+          /
+          <a href="https://web.archive.org/web/20081226191722/http://www.tcp-ip.or.jp/~tagawa/archive/index.html">Software Archive</a>
+          /
+          tserv version 0.2
+          (<a href="https://web.archive.org/web/20081226191722/http://www.tcp-ip.or.jp/~tagawa/archive/tserv.tar.gz">tserv.tar.gz</a>))。
+        </p>
+
+        <p>
+          以下は、オリジナルの yatt の README からの引用です。
+        </p>
+
+        <figure class="quotation">
+          <blockquote>
+            <p>
+              ● What is yatt?
+            </p>
+            <p>
+              yattは, Yet Another T-Code Trainer の略です.
+              これまで, 一度おぼえた文字を効率的に反復練習するためのT-Codeトレーナーは存在していませんでした.
+              yattはそのようなT-Codeトレーナーの一つの試みです.
+              このトレーナーは新たに文字を覚えるためのものではなく, 一度おぼえた文字をわすれないよう, 反復練習するためのテキストを生成するツールです.
+              また, 2ストロークで打てない文字は対象としません.
+              (また, 平仮名, 片仮名, 記号も対象としていません. )
+            </p>
+            <p>
+              一度おぼえた文字を毎日一通り打てば, ど忘れした文字も思い出すのでは?
+              と言うのがこのツールのねらいです.
+              T-Codeで, 2打鍵で直接打てる漢字は1158文字あります.
+              そこで, このツールはこの文字全てを一通り使って作れる熟語のセットを生成します.
+              このセットはなるべく小さくなるように作られますから, 最少限の打鍵で一通りの文字を通して練習することができます.
+            </p>
+          </blockquote>
+          <figcaption>
+            <cite>tserv.tar.gz:tserv-0.2/yatt/README</cite>
+          </figcaption>
+        </figure>
+
+        <p>
+          T-Code の漢字をカバーするなるべく小さな熟語集合、
+          というところがポイントです。
+          <a href="yatt.html">yatt.js</a> は、この点を継承しつつ
+          pubdic+ (少々内容が古いですが) からテキストを自動生成し
+          <a href="https://miau.github.io/eljs/">eelll/JS</a>
+          風のインターフェースで練習できるようにしました。
+          お試しください。
+        </p>
+      </main>
+    </div>
   </body>
 </html>
