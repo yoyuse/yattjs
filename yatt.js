@@ -17,6 +17,7 @@ let lesson = null;
 let lesson_index = null;
 let text = null;
 let text_index = null;
+let reviewlesson = null;
 
 const cookie_name = "yatt";
 const cookie = new Cookie(cookie_name);
@@ -528,7 +529,8 @@ window.addEventListener("load", (event) => {
         if (!prompting && input === "" && text_index === null && text === null && event.key === "Enter" && event.shiftKey) {
             // XXX: レッスン開始時に Shift+Return 空打ちで prompting に (ad hoc)
             puts();
-            putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/終了(Q)");
+            // putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/終了(Q)");
+            putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/補習(R)/終了(Q)");
             prompting = true;
         }
         if (prompting && event.key === "Enter") {
@@ -561,7 +563,8 @@ window.addEventListener("load", (event) => {
             stdin.value = "";
             if (text_index === null) {
                 text_index = 0;
-            } else if (text_index < lesson.text.length - 1) {
+            // } else if (text_index < lesson.text.length - 1) {
+            } else if (text_index < (reviewlesson?.text?.length ?? lesson.text.length) - 1) {
                 text_index += 1;
             } else {
                 time += lstime;
@@ -584,12 +587,14 @@ window.addEventListener("load", (event) => {
                 }
                 //
                 puts();
-                putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/終了(Q)");
+                // putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/終了(Q)");
+                putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/補習(R)/終了(Q)");
                 prompting = true;
             }
             //
             if (text_index !== null) {
-                text = lesson.text[text_index];
+                // text = lesson.text[text_index];
+                text = (reviewlesson?.text ?? lesson.text)[text_index];
                 if (lschweak.length === 0) { puts(text); }
                 else {
                     const re = new RegExp("(" + lschweak.map((ch) => RegExp.escape(ch)).join("|") + ")");
@@ -605,19 +610,49 @@ window.addEventListener("load", (event) => {
         } else if (prompting && text_index === null) {
             switch (event.key.toLowerCase()) {
             case "n":
-            case " ":
+                // case " ":
                 lesson_index = (lesson_index + 1) % lessons.length;
                 prompting = false;
+                reviewlesson = null;
                 break;
             case "p":
                 lesson_index = (lesson_index + lessons.length - 1) % lessons.length;
                 prompting = false;
+                reviewlesson = null;
                 break;
             case "a":
                 prompting = false;
+                reviewlesson = null;
+                break;
+            case "r":
+            case " ":
+                // reviewlesson = null;
+                const reviewchs = lschtypo.map((t) => t[0]).filter((ch) => ch != " ").UNIQUED();
+                if (0 < reviewchs.length) {
+                    const re = new RegExp(`[${reviewchs.map((ch) => RegExp.escape(ch)).join("")}]`);
+                    const reviewwords = lesson.text.flatMap((text) => text.split(" ")).filter((word) => re.test(word));
+                    const nwords = 6; // 1 行あたりの語数
+                    reviewlesson = {text: reviewwords.CHUNK(nwords).map((a) => a.join(" "))};
+                    text_index = 0;
+                } else {
+                    reviewlesson = null;
+                }
+                //
+                if (!reviewlesson && event.key.toLowerCase() === " ") {
+                    lesson_index = (lesson_index + 1) % lessons.length;
+                    prompting = false;
+                    // reviewlesson = null;
+                    break;
+                }
+                //
+                if (!reviewlesson) {
+                    putm("補習はありません");
+                    putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/補習(R)/終了(Q)");
+                } else { prompting = false; }
                 break;
             case "q":
                 // prompting = false;
+                reviewlesson = null;
                 puts();
                 putm();
                 putm("総合成績");
@@ -643,6 +678,17 @@ window.addEventListener("load", (event) => {
                 break;
             }
             stdin.value = "";
+            //
+            if (reviewlesson && !prompting) {
+                text_index = null;
+                text = null;
+                putm("リターンキーで開始");
+                //
+                stdin.focus();
+                do_lsreset();
+                return;
+            }
+            //
             if (!prompting) {
                 selectlesson.selectedIndex = lesson_index;
                 selectlesson.dispatchEvent(new Event("change"));
