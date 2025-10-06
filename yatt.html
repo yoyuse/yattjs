@@ -146,6 +146,11 @@
     <script src="yatt.js"></script>
 
   </head>
+
+  <!--
+     - macOS の Firefox と Google Chrome で問題なく使用できる accesskey (英字):
+     - c g j l o q r s t v x y z
+  -->
   <body>
     <div id="container">
       <header>
@@ -157,23 +162,23 @@
 
       <div id="grid">
         <span class="leftmost">
-          <label for="selectim" title="入力方式を指定します">入力方式(<span class="accesskey">I</span>)</label>
+          <label for="selectim" title="入力方式を指定します">入力方式(<span class="accesskey">C</span>)</label>
         </span>
         <span>
-          <select id="selectim" name="selectim" accesskey="i"></select>
+          <select id="selectim" name="selectim" accesskey="c"></select>
           &ensp;
-          <input name="checkdvorak" type="checkbox" value="" id="checkdvorak" accesskey="k">
+          <input name="checkdvorak" type="checkbox" value="" id="checkdvorak" accesskey="x">
           <label for="checkdvorak" title="Dvorak 配列を使います">
-            Dvora<span class="accesskey">K</span></label>
+            Dvorak(<span class="accesskey">X</span></label>)
           &ensp;
           <input name="checkdothelp" type="checkbox" id="checkdothelp" accesskey="y">
           <label for="checkdothelp" title="コードを(英字表示ではなく)図示します">
             打鍵図(<span class="accesskey">Y</span>)
           </label>
           &ensp;
-          <input name="checkecho" type="checkbox" id="checkecho" accesskey="e">
+          <input name="checkecho" type="checkbox" id="checkecho" accesskey="o">
           <label for="checkecho" title="入力キーを表示します">
-            エコー(<span class="accesskey">E</span>)
+            エコー(<span class="accesskey">O</span>)
           </label>
         </span>
         <!-- <br> -->
@@ -190,10 +195,10 @@
         </span>
         <!-- <br> -->
         <span class="leftmost">
-          <label for="selectuncertain" title="UNCERTAIN: 練習する文字を指定します">練習文字(<span class="accesskey">U</span>)</label>
+          <label for="selectuncertain" title="UNCERTAIN: 練習する文字を指定します">練習対象(<span class="accesskey">Z</span>)</label>
         </span>
         <span>
-          <select id="selectuncertain" name="selectuncertain" accesskey="u"></select>
+          <select id="selectuncertain" name="selectuncertain" accesskey="z"></select>
         </span>
         <!-- <br> -->
         <span class="leftmost">
@@ -215,8 +220,8 @@
       <br>
       <div id="stdhelp" class="stdio" title="ヘルプ欄: コードを表示します">&nbsp;</div>
       <div>
-        <button name="buttonhint" id="buttonhint" accesskey="h" title="コードを表示します">
-          <span class="accesskey">H</span>int
+        <button name="buttonhint" id="buttonhint" accesskey="l" title="コードを表示します">
+          Hint(<span class="accesskey">L</span>)
         </button>
       </div>
     </div>
