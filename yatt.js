@@ -290,7 +290,9 @@ function do_result(res) {
     //
     if (0 < aerr.length) {
         const e = aerr.map((ch) => [ch, "err"]);
+        e.unshift(["『"]);
         e.unshift(["[まちがえた文字] "]);
+        e.push(["』"]);
         pute(make_span(e), ["message"]);
     }
 }
@@ -520,6 +522,15 @@ window.addEventListener("load", (event) => {
     //
     stdin.addEventListener("keyup", (event) => {
         const input = stdin.value;
+        // const prompt = "もう一度? 次へ(N)/もう一度(A)/前へ(P)/補習(R)/終了(Q)";
+        const prompt = make_span([
+            ["もう一度トライしますか? 次へ("], ["N", "cmd"],
+            [")/もう一度("], ["A", "cmd"],
+            // [")/前へ("], ["P", "cmd"],
+            [")/補習("], ["R", "cmd"],
+            [")/終了("], ["Q", "cmd"],
+            [")"]
+        ]);
         // XXX
         if (lessons.length === 0) {
             stdin.value = "";
@@ -529,8 +540,7 @@ window.addEventListener("load", (event) => {
         if (!prompting && input === "" && text_index === null && text === null && event.key === "Enter" && event.shiftKey) {
             // XXX: レッスン開始時に Shift+Return 空打ちで prompting に (ad hoc)
             puts();
-            // putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/終了(Q)");
-            putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/補習(R)/終了(Q)");
+            pute(prompt, ["message"]);
             prompting = true;
         }
         if (prompting && event.key === "Enter") {
@@ -582,13 +592,14 @@ window.addEventListener("load", (event) => {
                     // (あるいは [まちがえた文字] とは別に表示する)
                     //
                     const e = typo.map((t) => [t[0], "err"]);
+                    e.unshift(["『"]);
                     e.unshift(["[この課でまちがえた文字] "]);
+                    e.push(["』"]);
                     pute(make_span(e), ["message"]);
                 }
                 //
                 puts();
-                // putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/終了(Q)");
-                putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/補習(R)/終了(Q)");
+                pute(prompt, ["message"]);
                 prompting = true;
             }
             //
@@ -608,7 +619,8 @@ window.addEventListener("load", (event) => {
                 text = null;
             }
         } else if (prompting && text_index === null) {
-            switch (event.key.toLowerCase()) {
+            const eventkey = event.key.toLowerCase();
+            switch (eventkey) {
             case "n":
                 // case " ":
                 lesson_index = (lesson_index + 1) % lessons.length;
@@ -638,7 +650,7 @@ window.addEventListener("load", (event) => {
                     reviewlesson = null;
                 }
                 //
-                if (!reviewlesson && event.key.toLowerCase() === " ") {
+                if (!reviewlesson && eventkey === " ") {
                     lesson_index = (lesson_index + 1) % lessons.length;
                     prompting = false;
                     // reviewlesson = null;
@@ -647,7 +659,7 @@ window.addEventListener("load", (event) => {
                 //
                 if (!reviewlesson) {
                     putm("補習はありません");
-                    putm("もう一度? 次へ(N)/もう一度(A)/前へ(P)/補習(R)/終了(Q)");
+                    pute(prompt, ["message"]);
                 } else { prompting = false; }
                 break;
             case "q":
