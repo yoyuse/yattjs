@@ -101,7 +101,7 @@ function reduce(word_array) {
         const re = new RegExp(`^[${RegExp.escape(certain_chars.join("") + chs)}]+$`);
         const word = word_array.filter((w) => re.test(w)).SAMPLE();
         if (word === undefined) { return word_array; }
-        word_array = word_array.filter((w) => w != word);
+        word_array = word_array.filter((w) => w !== word);
     }
 }
 
@@ -627,7 +627,7 @@ window.addEventListener("load", (event) => {
             case "r":
             case " ":
                 // reviewlesson = null;
-                const reviewchs = lschtypo.map((t) => t[0]).filter((ch) => ch != " ").UNIQUED();
+                const reviewchs = lschtypo.map((t) => t[0]).filter((ch) => ch !== " ").UNIQUED();
                 if (0 < reviewchs.length) {
                     const re = new RegExp(`[${reviewchs.map((ch) => RegExp.escape(ch)).join("")}]`);
                     const reviewwords = lesson.text.flatMap((text) => text.split(" ")).filter((word) => re.test(word));

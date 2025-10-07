@@ -71,7 +71,7 @@ LCS.prototype.match = function(r, s) {
         for (let i = 0; i < maxi; i++) {
             const relm = ra[i], len = relm.length;
 
-            if (((j + len) <= maxj) && (relm == s.substr(j, len))) {
+            if (((j + len) <= maxj) && (relm === s.substr(j, len))) {
                 // matched
                 for (let dj = 0; dj < len; dj++) {
                     this.mt[j + dj + 1][i + 1].set(
@@ -108,8 +108,8 @@ LCS.prototype.match = function(r, s) {
     for (nmatch = 1, j = maxj, i = maxi, m = this.mt[j][i].get('m');
          0 < m;
          nmatch += 1) {
-        while (0 < i && this.mt[j][i - 1].get('m') == m) { i -= 1; }
-        while (0 < j && this.mt[j - 1][i].get('m') == m) { j -= 1; }
+        while (0 < i && this.mt[j][i - 1].get('m') === m) { i -= 1; }
+        while (0 < j && this.mt[j - 1][i].get('m') === m) { j -= 1; }
         const prevj = this.mt[j][i].get('j');
         const previ = this.mt[j][i].get('i');
         this.md[nmatch].set('j', prevj);

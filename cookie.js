@@ -16,7 +16,7 @@ Cookie.prototype.read = function() {
     if (m) {
         const a = decodeURIComponent(m[1]).split(':');
         for (let i = 0; i < a.length; i++) {
-            if (a[i] == '') { continue; } // such as last case?
+            if (a[i] === '') { continue; } // such as last case?
             m = a[i].match(/([^=]+)=(.*)/);
             if (m) {
                 this.content.set(m[1], m[2]);

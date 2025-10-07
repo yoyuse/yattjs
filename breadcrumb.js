@@ -30,7 +30,7 @@ function make_breadcrumb() {
         url += "/" + arr[i];
         const span = document.createElement("span");
         span.classList.add("path-component");
-        if (i == arr.length - 1) {
+        if (i === arr.length - 1) {
             span.textContent = current_node["name"];
         } else {
             const a = document.createElement("a");
