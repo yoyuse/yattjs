@@ -76,7 +76,7 @@
      }
      span.ch {
        font-family: monospace;
-       font-size: 13px;
+       font-size: 14px;
        position: relative;
        bottom: 0.4em;
      }
@@ -87,7 +87,7 @@
      }
      span.dothelp {
        display: inline-block;
-       margin-bottom: 4px;
+       margin: 2px 0;
      }
      span.dothelp span.ch {
        bottom: 24px;
@@ -98,7 +98,10 @@
        display: inline-block;
        margin: 0 2px;
      }
-     span.stroke { background-color: #F5F5F5; }
+     span.alnum span.stroke {
+       line-height: 140%;
+     }
+     span.stroke { background-color: #F5F5F5; border-radius: 2px; }
      span.stroke.outset { background-color: #FFCDD2; }
      /* */
      span.accesskey { text-decoration: underline; }
@@ -172,9 +175,9 @@
           <label for="checkdvorak" title="Dvorak 配列を使います">
             Dvorak(<span class="accesskey">X</span></label>)
           &ensp;
-          <input name="checkdothelp" type="checkbox" id="checkdothelp" accesskey="y">
-          <label for="checkdothelp" title="コードを(英字表示ではなく)図示します">
-            打鍵図(<span class="accesskey">Y</span>)
+          <input name="checkalnum" type="checkbox" id="checkalnum" accesskey="y">
+          <label for="checkalnum" title="コードを英字表示します">
+            英字表記(<span class="accesskey">Y</span>)
           </label>
           &ensp;
           <input name="checkecho" type="checkbox" id="checkecho" accesskey="o">

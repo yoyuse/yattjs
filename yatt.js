@@ -221,9 +221,9 @@ function make_help(ch, st) {
         return span;
     }
     // XXX
-    if (ch === st_external) { return make_span([[ch, "ch"], [st_external, "stroke", "outset"]], ["help"]); }
+    if (ch === st_external) { return make_span([[ch, "ch"], [st_external, "stroke", "outset"]], ["help", "alnum"]); }
     //
-    return make_span([[ch, "ch"], [st_external, "stroke"]], ["help"]);
+    return make_span([[ch, "ch"], [st_external, "stroke"]], ["help", "alnum"]);
 }
 
 function do_help(append = false) {
@@ -380,7 +380,7 @@ function do_score(ms, nraw, stcor, sterr, stquest) {
 window.addEventListener("load", (event) => {
     const selectim = document.getElementById("selectim");
     const checkdvorak = document.getElementById("checkdvorak");
-    const checkdothelp = document.getElementById("checkdothelp");
+    const checkalnum = document.getElementById("checkalnum");
     const checkecho = document.getElementById("checkecho");
     const selectcertain = document.getElementById("selectcertain");
     const selectuncertain = document.getElementById("selectuncertain");
@@ -397,11 +397,11 @@ window.addEventListener("load", (event) => {
     const cookie_certain = cookie.get("certain");
     const cookie_uncertain = cookie.get("uncertain");
     ifdvorak = cookie.get("dvorak") === "true";
-    help_style = (cookie.get("help") ?? "dothelp") === "dothelp" ? "dothelp" : "";
+    help_style = (cookie.get("help") ?? "dothelp") === "dothelp" ? "dothelp" : "alnum";
     const echo_mode = cookie.get("echo") === "true";
     repeat_mode = cookie.get("repeat") === "true";
     checkdvorak.checked = ifdvorak;
-    checkdothelp.checked = help_style === "dothelp";
+    checkalnum.checked = help_style === "alnum";
     checkecho.checked = echo_mode;
     checkrepeat.checked = repeat_mode;
     ifkana = cookie.get("kana") === "true";
@@ -716,8 +716,8 @@ window.addEventListener("load", (event) => {
         cookie.write();
     });
     //
-    checkdothelp.addEventListener("change", (event) => {
-        help_style = checkdothelp.checked ? "dothelp" : "";
+    checkalnum.addEventListener("change", (event) => {
+        help_style = checkalnum.checked ? "alnum" : "dothelp";
         do_help();
         stdin.focus();
         cookie.set("help", help_style);
