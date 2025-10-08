@@ -694,6 +694,9 @@ window.addEventListener("load", (event) => {
             if (reviewlesson && !prompting) {
                 text_index = null;
                 text = null;
+                // clear();
+                helps.CLEAR()
+                do_help();
                 putm("リターンキーで開始");
                 //
                 stdin.focus();
