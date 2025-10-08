@@ -545,7 +545,10 @@ window.addEventListener("load", (event) => {
         }
         if (prompting && event.key === "Enter") {
             stdin.value = "";
-        } else if (event.key === "Enter") {
+            // } else if (event.key === "Enter") {
+        } else if (event.key === "Enter" ||
+                   !prompting && text === null && event.key === " ") {
+            // XXX: Space でもレッスンを開始できるように (ad hoc)
             if (text === null) {
                 clear();
                 helps.CLEAR();
@@ -619,24 +622,27 @@ window.addEventListener("load", (event) => {
                 text = null;
             }
         } else if (prompting && text_index === null) {
-            const eventkey = event.key.toLowerCase();
-            switch (eventkey) {
+            // const eventkey = event.key.toLowerCase();
+            switch (event.key) {
             case "n":
-                // case " ":
+            case "N":
                 lesson_index = (lesson_index + 1) % lessons.length;
                 prompting = false;
                 reviewlesson = null;
                 break;
             case "p":
+            case "P":
                 lesson_index = (lesson_index + lessons.length - 1) % lessons.length;
                 prompting = false;
                 reviewlesson = null;
                 break;
             case "a":
+            case "A":
                 prompting = false;
                 reviewlesson = null;
                 break;
             case "r":
+            case "R":
             case " ":
                 // reviewlesson = null;
                 const reviewchs = lschtypo.map((t) => t[0]).filter((ch) => ch !== " ").UNIQUED();
@@ -650,7 +656,7 @@ window.addEventListener("load", (event) => {
                     reviewlesson = null;
                 }
                 //
-                if (!reviewlesson && eventkey === " ") {
+                if (!reviewlesson && event.key === " ") {
                     lesson_index = (lesson_index + 1) % lessons.length;
                     prompting = false;
                     // reviewlesson = null;
@@ -663,6 +669,7 @@ window.addEventListener("load", (event) => {
                 } else { prompting = false; }
                 break;
             case "q":
+            case "Q":
                 // prompting = false;
                 reviewlesson = null;
                 puts();
