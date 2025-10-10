@@ -6,7 +6,15 @@
     <title>yatt.js</title>
 
     <style>
-     body { font-size: 0.8rem; }
+     /*
+      * iOS Safariでは、ユーザーがアクセスしやすいようにデフォルトでテキストが拡大される場合があります。
+      * この動作を抑制するために、text-size-adjustプロパティを100%に設定します。
+      */
+     body {
+       font-size: 0.8rem;
+       text-size-adjust: 100%;
+       -webkit-text-size-adjust: 100%;
+     }
      #container {
        margin-left: auto;
        margin-right: auto;
