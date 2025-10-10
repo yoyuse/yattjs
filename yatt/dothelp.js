@@ -2,8 +2,19 @@ function dothelp(st = "") {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     //
-    canvas.width = 100;
-    canvas.height = 40;
+    // - Window: devicePixelRatio プロパティ - Web API | MDN
+    // - https://developer.mozilla.org/ja/docs/Web/API/Window/devicePixelRatio
+    const width = 100;
+    const height = 40;
+    //
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    //
+    const scale = window.devicePixelRatio;
+    canvas.width = Math.floor(width * scale);
+    canvas.height = Math.floor(height * scale);
+    //
+    ctx.scale(scale, scale);
     //
     // ctx.fillStyle = "#F5F5F5";
     // ctx.fillRect(0, 0, canvas.width, canvas.height);
