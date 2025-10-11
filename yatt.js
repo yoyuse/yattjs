@@ -444,6 +444,13 @@ window.addEventListener("load", (event) => {
         //
         selectlesson.selectedIndex = 0;
         selectlesson.dispatchEvent(new Event("change"));
+        //
+        // do_reset();
+        lschweak.CLEAR();
+        lschtypo.CLEAR();
+        sessiontypo.CLEAR();
+        reviewlesson = null;
+        ifsessionreview = false;
     };
     //
     selectcertain.addEventListener("change", (event) => {
