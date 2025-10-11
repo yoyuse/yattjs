@@ -18,6 +18,7 @@ let lesson_index = null;
 let text = null;
 let text_index = null;
 let reviewlesson = null;
+let ifsessionreview = false;
 
 const cookie_name = "yatt";
 const cookie = new Cookie(cookie_name);
@@ -54,6 +55,7 @@ let lssterr = null;             // lesson strokes error
 let lsstquest = null;           // lesson strokes question
 let lschweak = new Array();     // lesson chars weak
 const lschtypo = new Array();   // lesson chars typo
+const sessiontypo = new Array();
 
 // YATT
 function make_pattern() {
@@ -282,7 +284,10 @@ function do_result(res) {
         if (!lschweak.includes(ch)) { lschweak.push(ch); }
     });
     //
-    for (const typo of atypo) { lschtypo.push(typo); }
+    for (const typo of atypo) {
+        lschtypo.push(typo);
+        sessiontypo.push(typo[0]);
+    }
     helps = atypo;
     do_help();
     //
@@ -346,6 +351,7 @@ function do_reset() {
     lschweak.CLEAR();
     lschtypo.CLEAR();
     // prompting = false;
+    sessiontypo.CLEAR();
 }
 
 function do_lsreset() {
@@ -528,6 +534,7 @@ window.addEventListener("load", (event) => {
             [")/もう一度("], ["A", "cmd"],
             // [")/前へ("], ["P", "cmd"],
             [")/補習("], ["R", "cmd"],
+            [")/総復習("], ["T", "cmd"],
             [")/終了("], ["Q", "cmd"],
             [")"]
         ]);
@@ -629,17 +636,40 @@ window.addEventListener("load", (event) => {
                 lesson_index = (lesson_index + 1) % lessons.length;
                 prompting = false;
                 reviewlesson = null;
+                ifsessionreview = false;
                 break;
             case "p":
             case "P":
                 lesson_index = (lesson_index + lessons.length - 1) % lessons.length;
                 prompting = false;
                 reviewlesson = null;
+                ifsessionreview = false;
                 break;
             case "a":
             case "A":
                 prompting = false;
                 reviewlesson = null;
+                ifsessionreview = false;
+                break;
+            case "t":
+            case "T":
+                ifsessionreview = true;
+                const sessionreviewchs = sessiontypo.filter((ch) => ch != " ").UNIQUED();
+                if (0 < sessionreviewchs.length) {
+                    const re = new RegExp(`[${sessionreviewchs.map((ch) => RegExp.escape(ch)).join("")}]`);
+                    const reviewwords = lessons.flatMap((lesson) => lesson.text).map((text) => text.split(" ")).flat().filter((word) => re.test(word)); // XXX
+                    const nwords = 6; // 1 行あたりの語数
+                    reviewlesson = {text: reviewwords.SHUFFLED().CHUNK(nwords).map((a) => a.join(" "))};
+                    text_index = 0;
+                } else {
+                    reviewlesson = null;
+                }
+                //
+                if (!reviewlesson) {
+                    putm("総復習はありません");
+                    pute(prompt, ["message"]);
+                    ifsessionreview = false;
+                } else { prompting = false; }
                 break;
             case "r":
             case "R":
@@ -648,7 +678,12 @@ window.addEventListener("load", (event) => {
                 const reviewchs = lschtypo.map((t) => t[0]).filter((ch) => ch !== " ").UNIQUED();
                 if (0 < reviewchs.length) {
                     const re = new RegExp(`[${reviewchs.map((ch) => RegExp.escape(ch)).join("")}]`);
-                    const reviewwords = lesson.text.flatMap((text) => text.split(" ")).filter((word) => re.test(word));
+                    // const reviewwords = lesson.text.flatMap((text) => text.split(" ")).filter((word) => re.test(word));
+                    const reviewwords =
+                          (ifsessionreview ?
+                           lessons.flatMap((lesson) => lesson.text).map((text) => text.split(" ")).flat() :
+                           lesson.text.flatMap((text) => text.split(" "))).
+                          filter((word) => re.test(word));
                     const nwords = 6; // 1 行あたりの語数
                     reviewlesson = {text: reviewwords.CHUNK(nwords).map((a) => a.join(" "))};
                     text_index = 0;
@@ -666,12 +701,14 @@ window.addEventListener("load", (event) => {
                 if (!reviewlesson) {
                     putm("補習はありません");
                     pute(prompt, ["message"]);
+                    ifsessionreview = false;
                 } else { prompting = false; }
                 break;
             case "q":
             case "Q":
                 // prompting = false;
                 reviewlesson = null;
+                ifsessionreview = false;
                 puts();
                 putm();
                 putm("総合成績");
