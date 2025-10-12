@@ -43,9 +43,9 @@
      #grid {
        align-items: baseline;
        display: grid;
+       gap: 0 0.5em;
        grid-template-columns: max-content max-content;
      }
-     #grid .leftmost { margin-right: 0.5em; }
      /*  */
      select {
        margin: 4px 0;
@@ -173,7 +173,7 @@
       </header>
 
       <div id="grid">
-        <span class="leftmost">
+        <span>
           <label for="selectim" title="入力方式を指定します">入力方式(<span class="accesskey">C</span>)</label>
         </span>
         <span>
@@ -194,7 +194,7 @@
           </label>
         </span>
         <!-- <br> -->
-        <span class="leftmost">
+        <span>
           <label for="selectcertain" title="CERTAIN: 完全に覚えた(練習の必要がない)文字を指定します">修得済み(<span class="accesskey">V</span>)</label>
         </span>
         <span>
@@ -206,14 +206,14 @@
           </label>
         </span>
         <!-- <br> -->
-        <span class="leftmost">
+        <span>
           <label for="selectuncertain" title="UNCERTAIN: 練習する文字を指定します">練習対象(<span class="accesskey">Z</span>)</label>
         </span>
         <span>
           <select id="selectuncertain" name="selectuncertain" accesskey="z"></select>
         </span>
         <!-- <br> -->
-        <span class="leftmost">
+        <span>
           <label for="selectlesson" title="レッスン番号を指定します">レッスン(<span class="accesskey">S</span>)</label>
         </span>
         <span>
