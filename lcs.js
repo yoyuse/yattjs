@@ -15,24 +15,23 @@ function LCS() {
     for (let j = 0; j <= this.MAXJ; j++) {
         this.mt[j] = new Array(this.MAXI + 1);
         for (let i = 0; i <= this.MAXI; i++) {
-            this.mt[j][i] = {m:0, j:null, i:null};
+            this.mt[j][i] = {m: 0, j: null, i: null};
         }
     }
 
     // match data
     this.md = new Array(this.MAXM + 1);
     for (let n = 0; n <= this.MAXM; n++) {
-        this.md[n] = {len:0, j:null, i:null};
+        this.md[n] = {len: 0, j: null, i: null};
     }
 
     this.res = null;
     // [ [true, 'の', 'kd'], [false, [['が', ';s'], ['、', 'jd']], 'js;d'] ]
 
     this.stall = null;
-    this.sterr = null;
     this.stcor = null;
-    ///<errorrate>
-    this.stquest = null;
+    this.sterr = null;
+    this.stque = null;
 
     return this;
 }
@@ -43,16 +42,14 @@ function LCS() {
 LCS.prototype.match = function(r, s) {
     const sa = s.split('');
     this.stall = s.length;
-    ///<errorrate>
-    this.stquest = 0;
+    this.stque = 0;
 
     const ra_j = new Array();
     const ra   = new Array();
     for (let i = 0; i < r.length; i++) {
         ra_j.push(r[i][0]);
         ra.push(r[i][1]);
-        ///<errorrate>
-        this.stquest += r[i][1].length;
+        this.stque += r[i][1].length;
     }
 
     const maxj = Math.min(sa.length, this.MAXJ);
@@ -162,8 +159,8 @@ LCS.prototype.match = function(r, s) {
         j += len;
     }
 
-    return this;
-    // {res:res, stall:stall, sterr:sterr, stcor:stcor}
+    // return this;
+    return {res: this.res, all: this.stall, cor: this.stcor, err: this.sterr, que: this.stque};
 }
 
 const lcs = new LCS();

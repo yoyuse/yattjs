@@ -1,32 +1,31 @@
 const nbsp = "\u00a0";
-const stdout_size = 10;
-let stdin = null;
-let stdout = null;
-let stdhelp = null;
+const stdoutsize = 10;
+let stdin;
+let stdout;
+let stdhelp;
 
-let im = null;
-// let book = null;
-let certain = null;
-let uncertain = null;
-let pattern = /^$/;
-let words_for_ch = new Map();
-let words_count_for_ch = new Map();
+let im;
+let certain;
+let uncertain;
+let pattern;
+let wordarrays = new Map();
+let wordcounts = new Map();
 
 let lessons;
-let lesson = null;
-let lesson_index = null;
-let text = null;
-let text_index = null;
-let reviewlesson = null;
+let lesson;
+let lesson_index;
+let line;
+let line_index;
+let reviewlesson;
 let ifsessionreview = false;
 
-const cookie_name = "yatt";
-const cookie = new Cookie(cookie_name);
+const cookiename = "yatt";
+const cookie = new Cookie(cookiename);
 
 let ifdvorak = false;
-let help_style = "dothelp";
+let helpstyle = "dothelp";
 let helps = new Array();
-let repeat_mode = false;
+let repeatmode = false;
 let ifkana = false;
 const kanachars = `
 々ー
@@ -37,57 +36,52 @@ const kanachars = `
 タダチヂッツヅテデトド ナニヌネノ ハバパヒビピフブプヘベペホボポ
 マミムメモ ャヤュユョヨ ラリルレロ ヮワヰヱヲ ン ヴヵヶ
 `.trim().split(/\s*/);
-let certain_chars = null;
+let certainchars;
 
 let prompting = false;
 
-let time = null;                // total time
-let stall = null;               // strokes all
-let stcor = null;               // strokes correct
-let sterr = null;               // strokes error
-let stquest = null;             // strokes question
-let lstime = null;              // lesson time
-let lstimebeg = null;           // lesson time begin
-let lstimeend = null;           // lesson time end
-let lsstall = null;             // lesson strokes all
-let lsstcor = null;             // lesson strokes corrrect
-let lssterr = null;             // lesson strokes error
-let lsstquest = null;           // lesson strokes question
-let lschweak = new Array();     // lesson chars weak
-const lschtypo = new Array();   // lesson chars typo
+const totalst = {all: 0, cor: 0, err: 0, que: 0};
+const lessonst = {all: 0, cor: 0, err: 0, que: 0};
+let totaltime;
+let lessontime;
+let timebeg;
+let timeend;
+let weakchars = new Array();
+const lessontypo = new Array();
 const sessiontypo = new Array();
 
 // YATT
 function make_pattern() {
-    const str = certain_chars.concat(uncertain.chars).join('');
+    // const str = certain_chars.concat(uncertain.chars).join('');
+    const str = certainchars.concat(uncertain.chars).UNIQUED().join('');
     pattern = new RegExp(`^[${RegExp.escape(str)}]+$`);
 }
 
 function read_words() {
-    words_for_ch.clear();
-    words_count_for_ch.clear();
+    wordarrays.clear();
+    wordcounts.clear();
     for (const word of words) {
-        if (!pattern.test(word)) {continue;}
+        if (!pattern.test(word)) { continue; }
         word.split('').forEach((ch) => {
-            if (words_for_ch.get(ch) === undefined) { words_for_ch.set(ch, new Array()); }
-            words_for_ch.get(ch).push(word);
-            words_count_for_ch.set(ch, (words_count_for_ch.get(ch) ?? 0) + 1);
+            if (wordarrays.get(ch) === undefined) { wordarrays.set(ch, new Array()); }
+            wordarrays.get(ch).push(word);
+            wordcounts.set(ch, (wordcounts.get(ch) ?? 0) + 1);
         });
     }
 }
 
-function score(word, ch, used) {
+function wordscore(word, ch, used) {
     let score = 0;
     score -= Math.abs(2 - word.length); // 2 字熟語を優先
     score += word.split('').UNIQUED().filter((c0) => {
-        return c0 !== ch && !used.get(c0) && !certain_chars.includes(c0);
+        return c0 !== ch && !used.get(c0) && !certainchars.includes(c0);
     }).length;
     return score;
 }
 
-function stat(word_array) {
+function wordstat(wordset) {
     let count = new Map();
-    word_array.forEach((word) => {
+    wordset.forEach((word) => {
         word.split('').forEach((ch) => {
             count.set(ch, (count.get(ch) ?? 0) + 1);
         });
@@ -95,20 +89,27 @@ function stat(word_array) {
     return count;
 }
 
-function reduce(word_array) {
+function wordreduce(wordset) {
     while(true) {
-        const count = stat(word_array);
+        const count = wordstat(wordset);
+        /*
+        let chars = new Array();
+        for (const [key, val] of count) { if (2 <= val) { chars.push(key); } }
+        const re = new RegExp(`^[${RegExp.escape(certainchars.concat(chars).UNIQUED().join(''))}]+$`);
+        */
+        // これ ↑ は遅い…
         let chs = "";
         for (const [key, val] of count) { if (2 <= val) { chs += key; } }
-        const re = new RegExp(`^[${RegExp.escape(certain_chars.join("") + chs)}]+$`);
-        const word = word_array.filter((w) => re.test(w)).SAMPLE();
-        if (word === undefined) { return word_array; }
-        word_array = word_array.filter((w) => w !== word);
+        const re = new RegExp(`^[${RegExp.escape(certainchars.join('') + chs)}]+$`);
+        //
+        const word = wordset.filter((w) => re.test(w)).SAMPLE();
+        if (word === undefined) { return wordset; }
+        wordset = wordset.filter((w) => w !== word);
     }
 }
 
-function check(word_array) {
-    const count = stat(word_array);
+function check(wordset) {
+    const count = wordstat(wordset);
     let chs = "";
     for (const [key, val] of count) { if (val === undefined) { chs += key; } }
     console.log("check: " + (chs === "" ? "OK" : `FAILED: ${chs}`));
@@ -120,7 +121,7 @@ function yatt(rand_seed = 0) {
     // - JavaScriptで再現性のある乱数を生成する + 指定した範囲の乱数を生成する
     // - https://sbfl.net/blog/2017/06/01/javascript-reproducible-random/
     //
-    let word_array = new Array();
+    let wordset = new Array();
     let used = new Map();
     //
     make_pattern();
@@ -128,53 +129,39 @@ function yatt(rand_seed = 0) {
     //
     // 非破壊的にソート
     const chars = Array.from(uncertain.chars).sort((a, b) => {
-        const count_a = words_count_for_ch.get(a) ?? 0;
-        const count_b = words_count_for_ch.get(b) ?? 0;
+        const count_a = wordcounts.get(a) ?? 0;
+        const count_b = wordcounts.get(b) ?? 0;
         return count_a - count_b;
     });
     //
     chars.forEach((ch) => {
         if (used.get(ch) !== undefined) { return; }
-        const words = words_for_ch.get(ch) ?? [ch];
-        const word = words.SHUFFLED().sort((a, b) => {
-            return score(b, ch, used) - score(a, ch, used);
-        })[0];
+        const words = wordarrays.get(ch) ?? [ch];
         //
-        word_array.push(word);
+        /*
+        const word = words.SHUFFLED().sort((a, b) => {
+            return wordscore(b, ch, used) - wordscore(a, ch, used);
+        })[0];
+        */
+        // こちら ↓ の方が少し速いか…
+        const findbest = (words) => {
+            let maxscore = -Infinity;
+            let wd;
+            words.forEach((w) => {
+                const score = wordscore(w, ch, used)
+                if (maxscore < score) { maxscore = score; wd = w; }
+            });
+            return wd;
+        };
+        const word = findbest(words.SHUFFLED());
+        //
+        wordset.push(word);
         word.split('').forEach((ch) => { used.set(ch, true); });
     });
-    word_array = reduce(word_array);
+    wordset = wordreduce(wordset);
     // this.check(word_array);
-    return word_array;
+    return wordset;
 }
-
-/*
-function do_yatt() {
-    const nlines = 4;           // 1 レッスンあたりの行数
-    const nwords = 6;           // 1 行あたりの語数
-    let text = "";
-    let line = 0;
-    const word_array = yatt();
-    const array = word_array.SHUFFLED();
-    while (0 < array.length) {
-        const words = new Array();
-        [...Array(nwords)].map(() => words.push(array.shift()));
-        text += words.filter((w) => w !== undefined).join(' ') + "\n";
-        line += 1;
-        if (0 < array.length && line % nlines === 0) { text += "\n"; }
-    }
-    // return text;
-    // XXX
-    const a = text.replace(/\n+$/, '') // XXX
-          .split(/\n\n/);
-    let i = 0;
-    return a.map((lesson) => {
-        i += 1;
-        const text = lesson.split(/\n+/);
-        return {name: `Lesson ${i}`, chars: "", text: text};
-    });
-}
-*/
 
 // - [Javascript] 一次元配列の要素をｎ個ずつに分割した新しい二次元配列を返す #JavaScript - Qiita
 // - https://qiita.com/STSHISHO/items/e50b239927605114742d
@@ -205,14 +192,14 @@ function make_span(a, classList = []) {
 
 function make_help(ch, st) {
     const st_external = ifdvorak ? todvorak(st) : st;
-    if (help_style === "dothelp") {
+    if (helpstyle === "dothelp") {
         const span = document.createElement("span");
         let s = document.createElement("span");
         s.textContent = ch;
         s.classList.add("ch");
         span.appendChild(s);
         s = document.createElement("span");
-        s.classList.add("stroke");
+        s.classList.add("st");
         // XXX
         if (ch === st_external) { s.classList.add("outset"); }
         //
@@ -223,9 +210,9 @@ function make_help(ch, st) {
         return span;
     }
     // XXX
-    if (ch === st_external) { return make_span([[ch, "ch"], [st_external, "stroke", "outset"]], ["help", "alnum"]); }
+    if (ch === st_external) { return make_span([[ch, "ch"], [st_external, "st", "outset"]], ["help", "alnum"]); }
     //
-    return make_span([[ch, "ch"], [st_external, "stroke"]], ["help", "alnum"]);
+    return make_span([[ch, "ch"], [st_external, "st"]], ["help", "alnum"]);
 }
 
 function do_help(append = false) {
@@ -244,17 +231,17 @@ function do_help(append = false) {
 }
 
 function do_input_text(str, s) {
-    lstimeend = (new Date()).getTime();
-    lstime += lstimeend - lstimebeg;
+    timeend = (new Date()).getTime();
+    lessontime += timeend - timebeg;
     //
     // const r = im.encode2(str, ifdvorak);
     const r = im.encode2(ifdvorak ? fromdvorak(str) : str);
     //
     const m = lcs.match(r, s);
-    lsstall += m.stall;
-    lsstcor += m.stcor;
-    lssterr += m.sterr;
-    lsstquest += m.stquest;
+    lessonst.all += m.all;
+    lessonst.cor += m.cor;
+    lessonst.err += m.err;
+    lessonst.que += m.que;
     //
     return m;
 }
@@ -279,13 +266,13 @@ function do_result(res) {
         }
     }
     //
-    lschweak = lschweak.filter((ch) => !acorr.includes(ch));
+    weakchars = weakchars.filter((ch) => !acorr.includes(ch));
     aerr.forEach((ch) => {
-        if (!lschweak.includes(ch)) { lschweak.push(ch); }
+        if (!weakchars.includes(ch)) { weakchars.push(ch); }
     });
     //
     for (const typo of atypo) {
-        lschtypo.push(typo);
+        lessontypo.push(typo[0]);
         sessiontypo.push(typo[0]);
     }
     helps = atypo;
@@ -303,7 +290,7 @@ function do_result(res) {
 }
 
 function truncate() {
-    while (stdout_size < stdout.childElementCount) {
+    while (stdoutsize < stdout.childElementCount) {
         stdout.removeChild(stdout.firstChild);
     }
 }
@@ -338,47 +325,47 @@ function putm(str = "") {
 
 function clear() {
     while (stdout.firstChild) { stdout.removeChild(stdout.firstChild); }
-    for (let i = 0; i < stdout_size; i++) { puts(); }
+    for (let i = 0; i < stdoutsize; i++) { puts(); }
     truncate();
 }
 
 function do_reset() {
-    time = 0;
-    stall = 0;
-    stcor = 0;
-    sterr = 0;
-    stquest = 0;
-    lschweak.CLEAR();
-    lschtypo.CLEAR();
+    totaltime = 0;
+    totalst.all = 0;
+    totalst.cor = 0;
+    totalst.err = 0;
+    totalst.que = 0;
+    weakchars.CLEAR();
+    lessontypo.CLEAR();
     // prompting = false;
     sessiontypo.CLEAR();
 }
 
-function do_lsreset() {
-    lstime = 0;
-    lsstall = 0;
-    lsstcor = 0;
-    lssterr = 0;
-    lsstquest = 0;
-    lschtypo.CLEAR();
+function do_lessonreset() {
+    lessontime = 0;
+    lessonst.all = 0;
+    lessonst.cor = 0;
+    lessonst.err = 0;
+    lessonst.que = 0;
+    lessontypo.CLEAR();
     prompting = false;
 }
 
-function do_score(ms, nraw, stcor, sterr, stquest) {
+function do_score(ms, st) {
     pute(make_span([["[総打鍵成績] 毎打鍵 "],
-                    [Math.floor(ms / nraw), "usr"],
+                    [Math.floor(ms / st.all), "usr"],
                     [" ミリ秒、毎分 "],
-                    [Math.floor(nraw / ms * 60000), "usr"],
+                    [Math.floor(st.all / ms * 60000), "usr"],
                     [" 打鍵"]]),
          ["message"]);
     pute(make_span([["[実打鍵成績] 毎打鍵 "],
-                    [Math.floor(ms / stcor), "usr"],
+                    [Math.floor(ms / st.cor), "usr"],
                     [" ミリ秒、毎分 "],
-                    [Math.floor(stcor / ms * 60000), "usr"],
+                    [Math.floor(st.cor / ms * 60000), "usr"],
                     [" 打鍵"]]),
          ["message"]);
     pute(make_span([["エラーレート "],
-                    [Math.floor(sterr / stquest * 1000) / 10, "err"],
+                    [Math.floor(st.err / st.que * 1000) / 10, "err"],
                     [" %"]]),
          ["message"]);
 }
@@ -403,13 +390,13 @@ window.addEventListener("load", (event) => {
     const cookie_certain = cookie.get("certain");
     const cookie_uncertain = cookie.get("uncertain");
     ifdvorak = cookie.get("dvorak") === "true";
-    help_style = (cookie.get("help") ?? "dothelp") === "dothelp" ? "dothelp" : "alnum";
-    const echo_mode = cookie.get("echo") === "true";
-    repeat_mode = cookie.get("repeat") === "true";
+    helpstyle = (cookie.get("help") ?? "dothelp") === "dothelp" ? "dothelp" : "alnum";
+    const echomode = cookie.get("echo") === "true";
+    repeatmode = cookie.get("repeat") === "true";
     checkdvorak.checked = ifdvorak;
-    checkalnum.checked = help_style === "alnum";
-    checkecho.checked = echo_mode;
-    checkrepeat.checked = repeat_mode;
+    checkalnum.checked = helpstyle === "alnum";
+    checkecho.checked = echomode;
+    checkrepeat.checked = repeatmode;
     ifkana = cookie.get("kana") === "true";
     checkkana.checked = ifkana;
     //
@@ -446,8 +433,8 @@ window.addEventListener("load", (event) => {
         selectlesson.dispatchEvent(new Event("change"));
         //
         // do_reset();
-        lschweak.CLEAR();
-        lschtypo.CLEAR();
+        weakchars.CLEAR();
+        lessontypo.CLEAR();
         sessiontypo.CLEAR();
         reviewlesson = null;
         ifsessionreview = false;
@@ -459,7 +446,7 @@ window.addEventListener("load", (event) => {
         cookie.set("certain", certain.id);
         cookie.write();
         //
-        certain_chars = ifkana ? certain.chars.concat(kanachars) : certain.chars;
+        certainchars = ifkana ? certain.chars.concat(kanachars) : certain.chars;
         if (certain && uncertain) { make_lessons(); }
     });
     //
@@ -481,15 +468,15 @@ window.addEventListener("load", (event) => {
             putm();
             //
             stdin.focus();
-            do_lsreset();
+            do_lessonreset();
             return;
         }
         //
         const index = selectlesson.selectedIndex;
         lesson = lessons[index];
         lesson_index = index;
-        text_index = null;
-        text = null;
+        line_index = null;
+        line = null;
         helps = lesson.chars.split("").map((ch) => im.encode2(ch)[0]);
         do_help();
         clear();
@@ -500,7 +487,7 @@ window.addEventListener("load", (event) => {
         putm("リターンキーで開始");
         //
         stdin.focus();
-        do_lsreset();
+        do_lessonreset();
     });
     //
     for (const im of ims) {
@@ -551,7 +538,7 @@ window.addEventListener("load", (event) => {
             return;
         }
         //
-        if (!prompting && input === "" && text_index === null && text === null && event.key === "Enter" && event.shiftKey) {
+        if (!prompting && input === "" && line_index === null && line === null && event.key === "Enter" && event.shiftKey) {
             // XXX: レッスン開始時に Shift+Return 空打ちで prompting に (ad hoc)
             puts();
             pute(prompt, ["message"]);
@@ -561,54 +548,53 @@ window.addEventListener("load", (event) => {
             stdin.value = "";
             // } else if (event.key === "Enter") {
         } else if (event.key === "Enter" ||
-                   !prompting && text === null && event.key === " ") {
+                   !prompting && line === null && event.key === " ") {
             // XXX: Space でもレッスンを開始できるように (ad hoc)
-            if (text === null) {
+            if (line === null) {
                 clear();
                 helps.CLEAR();
                 do_help();
-            } else if (text !== "" && input === "") {
+            } else if (line !== "" && input === "") {
                 // XXX: レッスン中に Return 空打ちでスキップ (ad hoc)
                 putm("スキップしました");
                 puts();
             } else {
                 // const res = do_input_text(text, input);
-                const res = do_input_text(text, ifdvorak ? fromdvorak(input) : input);
+                const res = do_input_text(line, ifdvorak ? fromdvorak(input) : input);
                 do_result(res.res);
-                if (repeat_mode && res.sterr !== 0) {
+                if (repeatmode && res.err !== 0) {
                     stdin.value = "";
-                    if (lschweak.length === 0) { puts(text); }
+                    if (weakchars.length === 0) { puts(line); }
                     else {
-                        const re = new RegExp("(" + lschweak.map((ch) => RegExp.escape(ch)).join("|") + ")");
+                        const re = new RegExp("(" + weakchars.map((ch) => RegExp.escape(ch)).join("|") + ")");
                         // > もし separator が括弧 ( ) を含む正規表現であれば、一致した結果が配列に含められます。
-                        const a = text.split(re).map((s) => re.test(s) ? [s, "weak"] : [s]);
+                        const a = line.split(re).map((s) => re.test(s) ? [s, "weak"] : [s]);
                         pute(make_span(a));
                     }
                     return;
                 } else { puts(); }
             }
             stdin.value = "";
-            if (text_index === null) {
-                text_index = 0;
-            // } else if (text_index < lesson.text.length - 1) {
-            } else if (text_index < (reviewlesson?.text?.length ?? lesson.text.length) - 1) {
-                text_index += 1;
+            if (line_index === null) {
+                line_index = 0;
+            } else if (line_index < (reviewlesson?.text?.length ?? lesson.text.length) - 1) {
+                line_index += 1;
             } else {
-                time += lstime;
-                stall += lsstall;
-                stcor += lsstcor;
-                sterr += lssterr;
-                stquest += lsstquest;
-                do_score(lstime, lsstall, lsstcor, lssterr, lsstquest);
+                totaltime += lessontime;
+                totalst.all += lessonst.all;
+                totalst.cor += lessonst.cor;
+                totalst.err += lessonst.err;
+                totalst.que += lessonst.que;
+                do_score(lessontime, lessonst);
                 //
-                text_index = null;
+                line_index = null;
                 //
-                if (0 < lschtypo.length) {
-                    const typo = lschtypo.UNIQUED((a, b) => a[0] === b[0] && a[1] === b[1]);
+                if (0 < lessontypo.length) {
+                    const typo = lessontypo.UNIQUED();
                     // XXX: [この課でまちがえた文字] のヘルプは表示しない
                     // (あるいは [まちがえた文字] とは別に表示する)
                     //
-                    const e = typo.map((t) => [t[0], "err"]);
+                    const e = typo.map((t) => [t, "err"]);
                     e.unshift(["『"]);
                     e.unshift(["[この課でまちがえた文字] "]);
                     e.push(["』"]);
@@ -620,22 +606,22 @@ window.addEventListener("load", (event) => {
                 prompting = true;
             }
             //
-            if (text_index !== null) {
+            if (line_index !== null) {
                 // text = lesson.text[text_index];
-                text = (reviewlesson?.text ?? lesson.text)[text_index];
-                if (lschweak.length === 0) { puts(text); }
+                line = (reviewlesson?.text ?? lesson.text)[line_index];
+                if (weakchars.length === 0) { puts(line); }
                 else {
-                    const re = new RegExp("(" + lschweak.map((ch) => RegExp.escape(ch)).join("|") + ")");
+                    const re = new RegExp("(" + weakchars.map((ch) => RegExp.escape(ch)).join("|") + ")");
                     // > もし separator が括弧 ( ) を含む正規表現であれば、一致した結果が配列に含められます。
-                    const a = text.split(re).map((s) => re.test(s) ? [s, "weak"] : [s]);
+                    const a = line.split(re).map((s) => re.test(s) ? [s, "weak"] : [s]);
                     pute(make_span(a));
                 }
                 //
-                lstimebeg = (new Date()).getTime();
+                timebeg = (new Date()).getTime();
             } else {
-                text = null;
+                line = null;
             }
-        } else if (prompting && text_index === null) {
+        } else if (prompting && line_index === null) {
             // const eventkey = event.key.toLowerCase();
             switch (event.key) {
             case "n":
@@ -661,13 +647,13 @@ window.addEventListener("load", (event) => {
             case "t":
             case "T":
                 ifsessionreview = true;
-                const sessionreviewchs = sessiontypo.filter((ch) => ch != " ").UNIQUED();
-                if (0 < sessionreviewchs.length) {
-                    const re = new RegExp(`[${sessionreviewchs.map((ch) => RegExp.escape(ch)).join("")}]`);
-                    const reviewwords = lessons.flatMap((lesson) => lesson.text).map((text) => text.split(" ")).flat().filter((word) => re.test(word)); // XXX
+                const sessionreviewchars = sessiontypo.filter((ch) => ch != " ").UNIQUED();
+                if (0 < sessionreviewchars.length) {
+                    const re = new RegExp(`[${sessionreviewchars.map((ch) => RegExp.escape(ch)).join("")}]`);
+                    const reviewwords = lessons.flatMap((lesson) => lesson.text).map((line) => line.split(" ")).flat().filter((word) => re.test(word)); // XXX
                     const nwords = 6; // 1 行あたりの語数
                     reviewlesson = {text: reviewwords.SHUFFLED().CHUNK(nwords).map((a) => a.join(" "))};
-                    text_index = 0;
+                    line_index = 0;
                 } else {
                     reviewlesson = null;
                 }
@@ -682,18 +668,17 @@ window.addEventListener("load", (event) => {
             case "R":
             case " ":
                 // reviewlesson = null;
-                const reviewchs = lschtypo.map((t) => t[0]).filter((ch) => ch !== " ").UNIQUED();
-                if (0 < reviewchs.length) {
-                    const re = new RegExp(`[${reviewchs.map((ch) => RegExp.escape(ch)).join("")}]`);
-                    // const reviewwords = lesson.text.flatMap((text) => text.split(" ")).filter((word) => re.test(word));
+                const reviewchars = lessontypo.filter((ch) => ch !== " ").UNIQUED();
+                if (0 < reviewchars.length) {
+                    const re = new RegExp(`[${reviewchars.map((ch) => RegExp.escape(ch)).join("")}]`);
                     const reviewwords =
                           (ifsessionreview ?
-                           lessons.flatMap((lesson) => lesson.text).map((text) => text.split(" ")).flat() :
-                           lesson.text.flatMap((text) => text.split(" "))).
+                           lessons.flatMap((lesson) => lesson.text).map((line) => line.split(" ")).flat() :
+                           lesson.text.flatMap((line) => line.split(" "))).
                           filter((word) => re.test(word));
                     const nwords = 6; // 1 行あたりの語数
                     reviewlesson = {text: reviewwords.CHUNK(nwords).map((a) => a.join(" "))};
-                    text_index = 0;
+                    line_index = 0;
                 } else {
                     reviewlesson = null;
                 }
@@ -721,12 +706,12 @@ window.addEventListener("load", (event) => {
                 putm("総合成績");
                 putm();
                 //
-                do_score(time, stall, stcor, sterr, stquest);
+                do_score(totaltime, totalst);
                 //
                 pute(make_span([["入力打鍵数 "],
-                                [stall, "usr"],
+                                [totalst.all, "usr"],
                                 [" 打鍵、所要時間 "],
-                                [Math.ceil(time / 1000), "usr"],
+                                [Math.ceil(totaltime / 1000), "usr"],
                                 [" 秒"]]),
                     ["message"]);
                 puts();
@@ -743,15 +728,15 @@ window.addEventListener("load", (event) => {
             stdin.value = "";
             //
             if (reviewlesson && !prompting) {
-                text_index = null;
-                text = null;
+                line_index = null;
+                line = null;
                 // clear();
                 helps.CLEAR()
                 do_help();
                 putm("リターンキーで開始");
                 //
                 stdin.focus();
-                do_lsreset();
+                do_lessonreset();
                 return;
             }
             //
@@ -771,10 +756,10 @@ window.addEventListener("load", (event) => {
     });
     //
     checkalnum.addEventListener("change", (event) => {
-        help_style = checkalnum.checked ? "alnum" : "dothelp";
+        helpstyle = checkalnum.checked ? "alnum" : "dothelp";
         do_help();
         stdin.focus();
-        cookie.set("help", help_style);
+        cookie.set("help", helpstyle);
         cookie.write();
     });
     //
@@ -788,17 +773,17 @@ window.addEventListener("load", (event) => {
     //
     checkkana.addEventListener("change", (event) => {
         ifkana = checkkana.checked;
-        certain_chars = ifkana ? certain.chars.concat(kanachars) : certain.chars;
+        certainchars = ifkana ? certain.chars.concat(kanachars) : certain.chars;
         if (certain && uncertain) { make_lessons(); }
         cookie.set("kana", ifkana);
         cookie.write();
     });
     //
     buttonhint.addEventListener("click", (event) => {
-        if (text !== null) {
-            helps = text.split("").map((ch) => im.encode2(ch)[0]); // XXX
+        if (line !== null) {
+            helps = line.split("").map((ch) => im.encode2(ch)[0]); // XXX
         } else {
-            helps = lschtypo.UNIQUED((a, b) => a[0] === b[0] && a[1] === b[1]);
+            helps = lessontypo.UNIQUED().map((ch) => im.encode2(ch)[0]);
             // stdin.value = "";
         }
         do_help();
@@ -806,9 +791,9 @@ window.addEventListener("load", (event) => {
     });
     //
     checkrepeat.addEventListener("change", (event) => {
-        repeat_mode = checkrepeat.checked;
+        repeatmode = checkrepeat.checked;
         stdin.focus();
-        cookie.set("repeat", repeat_mode);
+        cookie.set("repeat", repeatmode);
         cookie.write();
     });
     //
