@@ -22,6 +22,8 @@ let ifsessionreview = false;
 const cookiename = "yatt";
 const cookie = new Cookie(cookiename);
 
+const dothelp = new DotHelp();
+
 let ifdvorak = false;
 let helpstyle = "dothelp";
 let helps = new Array();
@@ -204,7 +206,7 @@ function make_help(ch, st) {
         if (ch === st_external) { s.classList.add("outset"); }
         //
         s.title = st_external;
-        s.appendChild(dothelp(st));
+        s.appendChild(dothelp.draw(st));
         span.appendChild(s);
         span.classList.add("help", "dothelp");
         return span;

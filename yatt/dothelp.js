@@ -1,4 +1,10 @@
-function dothelp(st = "") {
+function DotHelp() {
+    this.black = "#424242";
+    this.white = "#FFFFFF";
+    return this;
+}
+
+DotHelp.prototype.draw = function(st = "") {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     //
@@ -16,13 +22,10 @@ function dothelp(st = "") {
     //
     ctx.scale(scale, scale);
     //
-    // ctx.fillStyle = "#F5F5F5";
-    // ctx.fillRect(0, 0, canvas.width, canvas.height);
-    //
     for (let j = 0; j < 4; j++) {
         for (let i = 0; i < 10; i++) {
             if (0 < j && i !== 4 && i !== 5) {
-                put_dot(ctx, i, j);
+                this.dot(ctx, i, j);
             }
         }
     }
@@ -31,18 +34,18 @@ function dothelp(st = "") {
     const keys = deprefixed.split("").map((s) => kbdqwerty.indexOf(s)); // array of 0..39 or -1
     const kbd = new Array(40);
     let ifw = false;
-    let st1 = put_st1;
-    let st2 = put_st2;
-    let st3 = put_st3;
-    let st4 = put_st4;
-    let stw = put_stw;
-    let stx = put_stx;
+    let st1 = this.st1;
+    let st2 = this.st2;
+    let st3 = this.st3;
+    let st4 = this.st4;
+    let stw = this.stw;
+    let stx = this.stx;
     switch (prefix) {
-    case "■": st1 = put_sta1; st2 = put_sta2; stw = put_staw; break;
-    case "▲": st1 = put_str; stw = put_str; break;
-    case "▽": st1 = put_stl; stw = put_stl; break;
-    case "☆": st1 = put_stwhite; stw = put_stwhite; break;
-    case "★": st1 = put_stblack; stw = put_stblack; break;
+    case "■": st1 = this.sta1; st2 = this.sta2; stw = this.staw; break;
+    case "▲": st1 = this.str; stw = this.str; break;
+    case "▽": st1 = this.stl; stw = this.stl; break;
+    case "☆": st1 = this.stwhite; stw = this.stwhite; break;
+    case "★": st1 = this.stblack; stw = this.stblack; break;
     default: break;
     }
     keys.forEach((k, n) => {
@@ -60,24 +63,25 @@ function dothelp(st = "") {
         }
     });
     //
-    kbd.forEach((fn, n) => { if (fn) { fn(ctx, n); } });
+    // kbd.forEach((fn, k) => { if (fn) { fn(ctx, k); } });
+    kbd.forEach((fn, k) => { if (fn) { this.fn = fn; this.fn(ctx, k); } });
     //
     return canvas;
 }
 
-function put_dot(ctx, i, j) {
+DotHelp.prototype.dot = function(ctx, i, j) {
     const x = i * 10 + 5 - 1;
     const y = j * 10 + 5 - 1;
-    ctx.fillStyle = "#424242";
+    ctx.fillStyle = this.black;
     ctx.fillRect(x, y, 2, 2);
 }
 
-function put_st1(ctx, k) {
+DotHelp.prototype.st1 = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5;
     const r = 4 - 0.25;
-    ctx.fillStyle = "#424242";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.black;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
@@ -85,12 +89,12 @@ function put_st1(ctx, k) {
     ctx.stroke();
 }
 
-function put_st2(ctx, k) {
+DotHelp.prototype.st2 = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5;
     const r = 4 - 0.25;
-    ctx.fillStyle = "#FFFFFF";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.white;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
@@ -98,13 +102,13 @@ function put_st2(ctx, k) {
     ctx.stroke();
 }
 
-function put_st3(ctx, k) {
+DotHelp.prototype.st3 = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5 + 1.5;
     const r = 4;
     const t = 2 * Math.PI / 3;
-    ctx.fillStyle = "#FFFFFF";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.white;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     for (let n = 0; n < 3; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 2) + x;
@@ -117,12 +121,12 @@ function put_st3(ctx, k) {
     ctx.stroke();
 }
 
-function put_st4(ctx, k) {
+DotHelp.prototype.st4 = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5;
     const r = 4 - 0.25;
-    ctx.fillStyle = "#FFFFFF";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.white;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     ctx.moveTo(x, y - r);
     ctx.lineTo(x - r, y);
@@ -133,12 +137,12 @@ function put_st4(ctx, k) {
     ctx.stroke();
 }
 
-function put_stw(ctx, k) {
+DotHelp.prototype.stw = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5;
     const r = 4 - 0.25;
-    ctx.fillStyle = "#FFFFFF";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.white;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
@@ -146,7 +150,7 @@ function put_stw(ctx, k) {
     ctx.stroke();
     //
     const r_inner = 2 - 0.75;
-    ctx.fillStyle = "#424242";
+    ctx.fillStyle = this.black;
     ctx.beginPath();
     ctx.arc(x, y, r_inner, 0, Math.PI * 2);
     ctx.fill();
@@ -154,15 +158,15 @@ function put_stw(ctx, k) {
     ctx.stroke();
 }
 
-function put_stx(ctx, k) {
+DotHelp.prototype.stx = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5;
     const r = 4 + 0.5;
     const s = 4 - 2.25;
     const t = 2 * Math.PI / 5;
     const u = Math.PI / 5;
-    ctx.fillStyle = "#FFFFFF";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.white;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     for (let n = 0; n < 5; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 2) + x;
@@ -178,13 +182,13 @@ function put_stx(ctx, k) {
     ctx.stroke();
 }
 
-function put_sta1(ctx, k) {
+DotHelp.prototype.sta1 = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5;
     const r = 4 + 0.95;
     const t = 2 * Math.PI / 4;
-    ctx.fillStyle = "#424242";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.black;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     for (let n = 0; n < 4; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 4) + x;
@@ -197,13 +201,13 @@ function put_sta1(ctx, k) {
     ctx.stroke();
 }
 
-function put_sta2(ctx, k) {
+DotHelp.prototype.sta2 = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5;
     const r = 4 + 0.95;
     const t = 2 * Math.PI / 4;
-    ctx.fillStyle = "#FFFFFF";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.white;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     for (let n = 0; n < 4; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 4) + x;
@@ -216,13 +220,13 @@ function put_sta2(ctx, k) {
     ctx.stroke();
 }
 
-function put_staw(ctx, k) {
+DotHelp.prototype.staw = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5;
     const r = 4 + 0.95;
     const t = 2 * Math.PI / 4;
-    ctx.fillStyle = "#FFFFFF";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.white;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     for (let n = 0; n < 4; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 4) + x;
@@ -247,13 +251,13 @@ function put_staw(ctx, k) {
     ctx.stroke();
 }
 
-function put_stl(ctx, k) {
+DotHelp.prototype.stl = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5 - 0.5;
     const r = 4;
     const t = 2 * Math.PI / 3;
-    ctx.fillStyle = "#FFFFFF";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.white;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     for (let n = 0; n < 3; n++) {
         const x1 = r * Math.cos(t * n + Math.PI / 2) + x;
@@ -266,13 +270,13 @@ function put_stl(ctx, k) {
     ctx.stroke();
 }
 
-function put_str(ctx, k) {
+DotHelp.prototype.str = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5 + 1.5;
     const r = 4;
     const t = 2 * Math.PI / 3;
-    ctx.fillStyle = "#424242";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.black;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     for (let n = 0; n < 3; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 2) + x;
@@ -285,19 +289,20 @@ function put_str(ctx, k) {
     ctx.stroke();
 }
 
-function put_stwhite(ctx, k) {
-    put_stx(ctx, k);
+DotHelp.prototype.stwhite = function(ctx, k) {
+    this.stx(ctx, k);
+    // DotHelp.prototype.stx(ctx, k);
 }
 
-function put_stblack(ctx, k) {
+DotHelp.prototype.stblack = function(ctx, k) {
     const i = k % 10; const x = i * 10 + 5;
     const j = Math.floor(k / 10); const y = j * 10 + 5;
     const r = 4 + 0.5;
     const s = 4 - 2.25;
     const t = 2 * Math.PI / 5;
     const u = Math.PI / 5;
-    ctx.fillStyle = "#424242";
-    ctx.strokeStyle = "#424242";
+    ctx.fillStyle = this.black;
+    ctx.strokeStyle = this.black;
     ctx.beginPath();
     for (let n = 0; n < 5; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 2) + x;
