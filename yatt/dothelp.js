@@ -1,34 +1,12 @@
 function DotHelp() {
+    this.ns = "http://www.w3.org/2000/svg";
     this.black = "#424242";
     this.white = "#FFFFFF";
     return this;
 }
 
 DotHelp.prototype.draw = function(st = "") {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    //
-    // - Window: devicePixelRatio プロパティ - Web API | MDN
-    // - https://developer.mozilla.org/ja/docs/Web/API/Window/devicePixelRatio
-    const width = 100;
-    const height = 40;
-    //
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    //
-    const scale = window.devicePixelRatio;
-    canvas.width = Math.floor(width * scale);
-    canvas.height = Math.floor(height * scale);
-    //
-    ctx.scale(scale, scale);
-    //
-    for (let j = 0; j < 4; j++) {
-        for (let i = 0; i < 10; i++) {
-            if (0 < j && i !== 4 && i !== 5) {
-                this.dot(ctx, i, j);
-            }
-        }
-    }
+    const svg = this.base();
     //
     const [deprefixed, prefix] = im.deprefix(st);
     const keys = deprefixed.split("").map((s) => kbdqwerty.indexOf(s)); // array of 0..39 or -1
@@ -62,258 +40,289 @@ DotHelp.prototype.draw = function(st = "") {
             }
         }
     });
-    //
-    // kbd.forEach((fn, k) => { if (fn) { fn(ctx, k); } });
-    kbd.forEach((fn, k) => { if (fn) { this.fn = fn; this.fn(ctx, k); } });
-    //
-    return canvas;
+    // kbd.forEach((fn, k) => { if (fn) { svg.appendChild(fn(k)); } });
+    kbd.forEach((fn, k) => { if (fn) { this.fn = fn; svg.appendChild(this.fn(k)); } });
+    return svg;
 }
 
-DotHelp.prototype.dot = function(ctx, i, j) {
-    const x = i * 10 + 5 - 1;
-    const y = j * 10 + 5 - 1;
-    ctx.fillStyle = this.black;
-    ctx.fillRect(x, y, 2, 2);
+DotHelp.prototype.xy = function(k, d = {x: 0, y: 0}) {
+    const i = k % 10;
+    const j = Math.floor(k / 10);
+    return [i * 10 + 5 + d.x, j * 10 + 5 + d.y];
 }
 
-DotHelp.prototype.st1 = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5;
+DotHelp.prototype.base = function() {
+    const svg = document.createElementNS(this.ns, "svg");
+    svg.setAttributeNS(null, "viewBox", "0 0 100 40");
+    svg.setAttributeNS(null, "width", "100");
+    svg.setAttributeNS(null, "height", "40");
+    for (let k = 0; k < 40; k++) {
+        const i = k % 10;
+        const j = Math.floor(k / 10);
+        if (j === 0 || i === 4 || i === 5) { continue; }
+        const [x, y] = this.xy(k);
+        const dot = document.createElementNS(this.ns, "rect");
+        dot.setAttributeNS(null, "x", x - 1);
+        dot.setAttributeNS(null, "y", y - 1);
+        dot.setAttributeNS(null, "width", 2);
+        dot.setAttributeNS(null, "height", 2);
+        dot.setAttributeNS(null, "fill", this.black);
+        svg.appendChild(dot);
+    }
+    return svg;
+}
+
+DotHelp.prototype.st1 = function(k) {
+    const [x, y] = this.xy(k);
     const r = 4 - 0.25;
-    ctx.fillStyle = this.black;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const dot = document.createElementNS(this.ns, "circle");
+    dot.setAttributeNS(null, "cx", x);
+    dot.setAttributeNS(null, "cy", y);
+    dot.setAttributeNS(null, "r", r);
+    dot.setAttributeNS(null, "fill", this.black);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
+    return dot;
 }
 
-DotHelp.prototype.st2 = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5;
+DotHelp.prototype.st2 = function(k) {
+    const [x, y] = this.xy(k);
     const r = 4 - 0.25;
-    ctx.fillStyle = this.white;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const dot = document.createElementNS(this.ns, "circle");
+    dot.setAttributeNS(null, "cx", x);
+    dot.setAttributeNS(null, "cy", y);
+    dot.setAttributeNS(null, "r", r);
+    dot.setAttributeNS(null, "fill", this.white);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
+    return dot;
 }
 
-DotHelp.prototype.st3 = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5 + 1.5;
+DotHelp.prototype.st3 = function(k) {
+    const [x, y] = this.xy(k, {x: 0, y: 1.5});
+    let points = new Array();
     const r = 4;
     const t = 2 * Math.PI / 3;
-    ctx.fillStyle = this.white;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
     for (let n = 0; n < 3; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 2) + x;
         const y1 = r * Math.sin(t * n - Math.PI / 2) + y;
-        if (n === 0) { ctx.moveTo(x1, y1); }
-        else { ctx.lineTo(x1, y1); }
+        points.push(x1);
+        points.push(y1);
     }
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const dot = document.createElementNS(this.ns, "polygon");
+    dot.setAttributeNS(null, "points", points.join(" "));
+    dot.setAttributeNS(null, "fill", this.white);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
+    return dot;
 }
 
-DotHelp.prototype.st4 = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5;
+DotHelp.prototype.st4 = function(k) {
+    const [x, y] = this.xy(k);
+    let points = new Array();
     const r = 4 - 0.25;
-    ctx.fillStyle = this.white;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
-    ctx.moveTo(x, y - r);
-    ctx.lineTo(x - r, y);
-    ctx.lineTo(x, y + r);
-    ctx.lineTo(x + r, y);
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const t = 2 * Math.PI / 4;
+    for (let n = 0; n < 4; n++) {
+        const x1 = r * Math.cos(t * n - Math.PI / 2) + x;
+        const y1 = r * Math.sin(t * n - Math.PI / 2) + y;
+        points.push(x1);
+        points.push(y1);
+    }
+    const dot = document.createElementNS(this.ns, "polygon");
+    dot.setAttributeNS(null, "points", points.join(" "));
+    dot.setAttributeNS(null, "fill", this.white);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
+    return dot;
 }
 
-DotHelp.prototype.stw = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5;
+DotHelp.prototype.stw = function(k) {
+    const [x, y] = this.xy(k);
     const r = 4 - 0.25;
-    ctx.fillStyle = this.white;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
-    //
-    const r_inner = 2 - 0.75;
-    ctx.fillStyle = this.black;
-    ctx.beginPath();
-    ctx.arc(x, y, r_inner, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const s = 2 - 0.75;
+    const dot = document.createElementNS(this.ns, "circle");
+    dot.setAttributeNS(null, "cx", x);
+    dot.setAttributeNS(null, "cy", y);
+    dot.setAttributeNS(null, "r", r);
+    dot.setAttributeNS(null, "fill", this.white);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
+    const dot2 = document.createElementNS(this.ns, "circle");
+    dot2.setAttributeNS(null, "cx", x);
+    dot2.setAttributeNS(null, "cy", y);
+    dot2.setAttributeNS(null, "r", s);
+    dot2.setAttributeNS(null, "fill", this.black);
+    dot2.setAttributeNS(null, "stroke", this.black);
+    dot2.setAttributeNS(null, "stroke-width", "1");
+    const g = document.createElementNS(this.ns, "g");
+    g.appendChild(dot);
+    g.appendChild(dot2)
+    return g;
 }
 
-DotHelp.prototype.stx = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5;
+DotHelp.prototype.stx = function(k) {
+    const [x, y] = this.xy(k);
+    let points = new Array();
     const r = 4 + 0.5;
     const s = 4 - 2.25;
     const t = 2 * Math.PI / 5;
     const u = Math.PI / 5;
-    ctx.fillStyle = this.white;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
     for (let n = 0; n < 5; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 2) + x;
         const y1 = r * Math.sin(t * n - Math.PI / 2) + y;
-        if (n === 0) { ctx.moveTo(x1, y1); }
-        else { ctx.lineTo(x1, y1); }
+        points.push(x1);
+        points.push(y1);
         const x2 = s * Math.cos(t * n + u - Math.PI / 2) + x;
         const y2 = s * Math.sin(t * n + u - Math.PI / 2) + y;
-        ctx.lineTo(x2, y2);
+        points.push(x2);
+        points.push(y2);
     }
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const dot = document.createElementNS(this.ns, "polygon");
+    dot.setAttributeNS(null, "points", points.join(" "));
+    dot.setAttributeNS(null, "fill", this.white);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
+    return dot;
 }
 
-DotHelp.prototype.sta1 = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5;
+DotHelp.prototype.sta1 = function(k) {
+    const [x, y] = this.xy(k);
+    let points = new Array();
     const r = 4 + 0.95;
     const t = 2 * Math.PI / 4;
-    ctx.fillStyle = this.black;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
     for (let n = 0; n < 4; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 4) + x;
         const y1 = r * Math.sin(t * n - Math.PI / 4) + y;
-        if (n === 0) { ctx.moveTo(x1, y1); }
-        else { ctx.lineTo(x1, y1); }
+        points.push(x1);
+        points.push(y1);
     }
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const dot = document.createElementNS(this.ns, "polygon");
+    dot.setAttributeNS(null, "points", points.join(" "));
+    dot.setAttributeNS(null, "fill", this.black);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
+    return dot;
 }
 
-DotHelp.prototype.sta2 = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5;
+DotHelp.prototype.sta2 = function(k) {
+    const [x, y] = this.xy(k);
+    let points = new Array();
     const r = 4 + 0.95;
     const t = 2 * Math.PI / 4;
-    ctx.fillStyle = this.white;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
     for (let n = 0; n < 4; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 4) + x;
         const y1 = r * Math.sin(t * n - Math.PI / 4) + y;
-        if (n === 0) { ctx.moveTo(x1, y1); }
-        else { ctx.lineTo(x1, y1); }
+        points.push(x1);
+        points.push(y1);
     }
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const dot = document.createElementNS(this.ns, "polygon");
+    dot.setAttributeNS(null, "points", points.join(" "));
+    dot.setAttributeNS(null, "fill", this.white);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
+    return dot;
 }
 
-DotHelp.prototype.staw = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5;
+DotHelp.prototype.staw = function(k) {
+    const [x, y] = this.xy(k);
+    let points = new Array();
     const r = 4 + 0.95;
+    const s = 2 + 0.12;
     const t = 2 * Math.PI / 4;
-    ctx.fillStyle = this.white;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
     for (let n = 0; n < 4; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 4) + x;
         const y1 = r * Math.sin(t * n - Math.PI / 4) + y;
-        if (n === 0) { ctx.moveTo(x1, y1); }
-        else { ctx.lineTo(x1, y1); }
+        points.push(x1);
+        points.push(y1);
     }
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const dot = document.createElementNS(this.ns, "polygon");
+    dot.setAttributeNS(null, "points", points.join(" "));
+    dot.setAttributeNS(null, "fill", this.white);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
     //
-    const r_inner = 2 + 0.12;
-    ctx.beginPath();
+    points.length = 0;
     for (let n = 0; n < 4; n++) {
-        const x1 = r_inner * Math.cos(t * n - Math.PI / 4) + x;
-        const y1 = r_inner * Math.sin(t * n - Math.PI / 4) + y;
-        if (n === 0) { ctx.moveTo(x1, y1); }
-        else { ctx.lineTo(x1, y1); }
+        const x1 = s * Math.cos(t * n - Math.PI / 4) + x;
+        const y1 = s * Math.sin(t * n - Math.PI / 4) + y;
+        points.push(x1);
+        points.push(y1);
     }
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const dot2 = document.createElementNS(this.ns, "polygon");
+    dot2.setAttributeNS(null, "points", points.join(" "));
+    dot2.setAttributeNS(null, "fill", this.white);
+    dot2.setAttributeNS(null, "stroke", this.black);
+    dot2.setAttributeNS(null, "stroke-width", "1");
+    const g = document.createElementNS(this.ns, "g");
+    //
+    g.appendChild(dot);
+    g.appendChild(dot2)
+    return g;
 }
 
-DotHelp.prototype.stl = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5 - 0.5;
+DotHelp.prototype.stl = function(k) {
+    const [x, y] = this.xy(k, {x: 0, y: -0.5});
+    let points = new Array();
     const r = 4;
     const t = 2 * Math.PI / 3;
-    ctx.fillStyle = this.white;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
     for (let n = 0; n < 3; n++) {
         const x1 = r * Math.cos(t * n + Math.PI / 2) + x;
         const y1 = r * Math.sin(t * n + Math.PI / 2) + y;
-        if (n === 0) { ctx.moveTo(x1, y1); }
-        else { ctx.lineTo(x1, y1); }
+        points.push(x1);
+        points.push(y1);
     }
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const dot = document.createElementNS(this.ns, "polygon");
+    dot.setAttributeNS(null, "points", points.join(" "));
+    dot.setAttributeNS(null, "fill", this.white);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
+    return dot;
 }
 
-DotHelp.prototype.str = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5 + 1.5;
+DotHelp.prototype.str = function(k) {
+    const [x, y] = this.xy(k, {x: 0, y: 1.5});
+    let points = new Array();
     const r = 4;
     const t = 2 * Math.PI / 3;
-    ctx.fillStyle = this.black;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
     for (let n = 0; n < 3; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 2) + x;
         const y1 = r * Math.sin(t * n - Math.PI / 2) + y;
-        if (n === 0) { ctx.moveTo(x1, y1); }
-        else { ctx.lineTo(x1, y1); }
+        points.push(x1);
+        points.push(y1);
     }
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const dot = document.createElementNS(this.ns, "polygon");
+    dot.setAttributeNS(null, "points", points.join(" "));
+    dot.setAttributeNS(null, "fill", this.black);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
+    return dot;
 }
 
-DotHelp.prototype.stwhite = function(ctx, k) {
-    this.stx(ctx, k);
-    // DotHelp.prototype.stx(ctx, k);
+DotHelp.prototype.stwhite = function(k) {
+    return this.stx(k);
 }
 
-DotHelp.prototype.stblack = function(ctx, k) {
-    const i = k % 10; const x = i * 10 + 5;
-    const j = Math.floor(k / 10); const y = j * 10 + 5;
+DotHelp.prototype.stblack = function(k) {
+    const [x, y] = this.xy(k);
+    let points = new Array();
     const r = 4 + 0.5;
     const s = 4 - 2.25;
     const t = 2 * Math.PI / 5;
     const u = Math.PI / 5;
-    ctx.fillStyle = this.black;
-    ctx.strokeStyle = this.black;
-    ctx.beginPath();
     for (let n = 0; n < 5; n++) {
         const x1 = r * Math.cos(t * n - Math.PI / 2) + x;
         const y1 = r * Math.sin(t * n - Math.PI / 2) + y;
-        if (n === 0) { ctx.moveTo(x1, y1); }
-        else { ctx.lineTo(x1, y1); }
+        points.push(x1);
+        points.push(y1);
         const x2 = s * Math.cos(t * n + u - Math.PI / 2) + x;
         const y2 = s * Math.sin(t * n + u - Math.PI / 2) + y;
-        ctx.lineTo(x2, y2);
+        points.push(x2);
+        points.push(y2);
     }
-    ctx.fill();
-    ctx.closePath();
-    ctx.stroke();
+    const dot = document.createElementNS(this.ns, "polygon");
+    dot.setAttributeNS(null, "points", points.join(" "));
+    dot.setAttributeNS(null, "fill", this.black);
+    dot.setAttributeNS(null, "stroke", this.black);
+    dot.setAttributeNS(null, "stroke-width", "1");
+    return dot;
 }
